@@ -24,9 +24,6 @@ export function smsConfigured() {
 export function pushConfigured() {
   return Boolean(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY && process.env.VAPID_SUBJECT && process.env.VAPID_SUBJECT !== "mailto:");
 }
-export function geocoderConfigured() {
-  return process.env.GEOCODER === "geoplateforme";
-}
 export function captchaConfigured() {
   return Boolean(process.env.TURNSTILE_SECRET_KEY && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
 }
@@ -72,15 +69,6 @@ export function integrationStatuses(): IntegrationStatus[] {
       configured: pushConfigured(),
       required: false,
       detail: pushConfigured() ? "Clés VAPID présentes." : "Clés VAPID manquantes : notifications push désactivées.",
-    },
-    {
-      key: "geocoder",
-      label: "Géocodage d'adresse (facultatif)",
-      configured: geocoderConfigured(),
-      required: false,
-      detail: geocoderConfigured()
-        ? "Géoplateforme IGN (contrôle de cohérence de l'adresse)."
-        : "Désactivé : le département est déduit du code postal.",
     },
     {
       key: "captcha",

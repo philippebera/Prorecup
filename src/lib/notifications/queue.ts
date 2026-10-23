@@ -8,6 +8,10 @@ import { getSettings } from "../settings";
 
 export const TRACKING_LINK = "{{TRACKING_LINK}}";
 
+// Notifications contenant un lien secret : le contenu est effacé dès qu'il n'est plus nécessaire.
+const SENSITIVE_KINDS = new Set(["PASSWORD_RESET", "INVITATION"]);
+const SCRUBBED = "(contenu confidentiel effacé)";
+
 /** Les liens de suivi ne sont jamais stockés en clair : un jeton est émis au moment de l'envoi. */
 async function renderBody(n: { body: string; requestId: string | null }) {
   if (!n.body.includes(TRACKING_LINK) || !n.requestId) return n.body;
@@ -60,7 +64,7 @@ export async function enqueue(db: Db, items: NotificationInput[]) {
         requestId: n.requestId ?? null,
         toAddress: n.toAddress ?? null,
         title: n.title,
-        body: n.body,
+        body: !configured && SENSITIVE_KINDS.has(n.kind) ? SCRUBBED : n.body,
         link: n.link ?? null,
         status: inApp ? "SENT" : configured ? "PENDING" : "SKIPPED_NOT_CONFIGURED",
         sentAt: inApp ? new Date() : null,
@@ -179,7 +183,7 @@ export async function processQueue(limit = 50) {
         }
         if (!ok) throw new Error("Aucun abonnement push valide");
       }
-      await prisma.notification.update({ where: { id }, data: { status: "SENT", sentAt: new Date(), lastError: null } });
+      await prisma.notification.update({ where: { id }, data: { status: "SENT", sentAt: new Date(), lastError: null, ...(SENSITIVE_KINDS.has(n.kind) ? { body: SCRUBBED } : {}) } });
       sent++;
     } catch (e) {
       failed++;
@@ -193,6 +197,7 @@ export async function processQueue(limit = 50) {
         where: { id },
         data: {
           status: final ? "FAILED" : "PENDING",
+          ...(final && SENSITIVE_KINDS.has(n.kind) ? { body: SCRUBBED } : {}),
           lastError: message.slice(0, 500),
           nextAttemptAt: new Date(Date.now() + BACKOFF_MIN[Math.min(n.attempts, MAX_ATTEMPTS - 1)] * 60_000),
         },

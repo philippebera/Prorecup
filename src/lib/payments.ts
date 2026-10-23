@@ -37,12 +37,14 @@ export async function createCheckout(params: { companyId: string; userId: string
     },
   });
   const back = params.returnTo && /^\/loueur\/[a-zA-Z0-9/_-]*$/.test(params.returnTo) ? params.returnTo : "/loueur/portefeuille";
-  const methods = (process.env.STRIPE_PAYMENT_METHODS || "card").split(",").map((s) => s.trim()).filter(Boolean) as Stripe.Checkout.SessionCreateParams.PaymentMethodType[];
+  const methods = (process.env.STRIPE_PAYMENT_METHODS || "card").split(",").map((s) => s.trim()).filter(Boolean) as Stripe.Checkout.SessionCreateParams.AllowedPaymentMethodType[];
 
-  const session = await stripe.checkout.sessions.create(
+  const session = await stripe.checkout.sessions
+    .create(
     {
       mode: "payment",
-      payment_method_types: methods,
+      // Filtre sur les moyens de paiement éligibles (paramètre de l'API Stripe récente).
+      allowed_payment_method_types: methods,
       client_reference_id: purchase.id,
       customer_email: company.stripeCustomerId ? undefined : company.billingEmail || company.email,
       customer: company.stripeCustomerId || undefined,
@@ -63,7 +65,12 @@ export async function createCheckout(params: { companyId: string; userId: string
       locale: "fr",
     },
     { idempotencyKey: `checkout:${purchase.id}` },
-  );
+    )
+    .catch(async (e: Error) => {
+      await prisma.purchase.update({ where: { id: purchase.id }, data: { status: "FAILED", failureReason: `Création Checkout : ${e.message}`.slice(0, 300) } });
+      console.error("Stripe Checkout", e.message);
+      throw new AppError("STRIPE_ERROR", "Le service de paiement est indisponible pour le moment. Aucun montant n'a été débité.", 502);
+    });
   await prisma.purchase.update({ where: { id: purchase.id }, data: { stripeCheckoutId: session.id } });
   await audit({ actorUserId: params.userId, actorType: "PROVIDER", action: "CHECKOUT_CREATED", entityType: "Purchase", entityId: purchase.id, data: { pack: q.pack.code, ttc: q.ttc } });
   return { url: session.url!, purchaseId: purchase.id };
