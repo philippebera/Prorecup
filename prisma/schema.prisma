@@ -1,0 +1,828 @@
+// Benne Direct — schéma de données
+// Principes :
+//  - Les crédits sont gérés par un registre (CreditLedgerEntry) ; CreditWallet n'est
+//    qu'un solde matérialisé mis à jour dans la même transaction que le registre.
+//  - Le plafond de 3 entreprises par demande est garanti par verrouillage de ligne
+//    (SELECT ... FOR UPDATE), une contrainte d'unicité (requestId, companyId) et
+//    une contrainte CHECK en base (voir migration SQL).
+//  - Les coordonnées et l'adresse exacte d'une demande ne sortent du serveur
+//    qu'à travers les fonctions de src/lib/requests/views.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Utilisateurs et sessions
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  ADMIN
+  PROVIDER
+  CLIENT
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String?
+  name            String
+  phone           String?
+  role            UserRole
+  emailVerifiedAt DateTime?
+  disabledAt      DateTime?
+  deletedAt       DateTime?
+  lastLoginAt     DateTime?
+  isDemo          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  sessions          Session[]
+  membership        CompanyMember?
+  clientRequests    Request[]           @relation("ClientRequests")
+  unlocks           Unlock[]
+  offers            Offer[]
+  notifications     Notification[]
+  pushSubscriptions PushSubscription[]
+  auditLogs         AuditLog[]
+  invitations       CompanyInvitation[] @relation("InvitedBy")
+  passwordResets    PasswordReset[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ip        String?
+  userAgent String?
+
+  @@index([userId])
+}
+
+model PasswordReset {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Entreprises (loueurs)
+// ---------------------------------------------------------------------------
+
+enum CompanyStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  REJECTED
+}
+
+enum MemberRole {
+  OWNER
+  MEMBER
+}
+
+model Company {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  legalName     String
+  tradeName     String?
+  siret         String        @unique
+  siren         String
+  vatNumber     String?
+  email         String
+  phone         String
+  website       String?
+  addressLine   String
+  postalCode    String
+  city          String
+  description   String?
+  status        CompanyStatus @default(PENDING)
+  statusReason  String?
+  approvedAt    DateTime?
+  publicProfile Boolean       @default(true)
+
+  // Offre déclarée
+  skipSizesM3      Int[]
+  wasteTypes       String[]
+  services         String[]
+  openingHours     String?
+  availabilityNote String?
+
+  // Préférences de notification (entreprise)
+  notifyEmail      Boolean @default(true)
+  notifySms        Boolean @default(false)
+  notifyPush       Boolean @default(true)
+  notifyQuietStart Int? // heure locale (0-23) de début de silence
+  notifyQuietEnd   Int? // heure locale (0-23) de fin de silence
+  smsPhone         String?
+
+  // Facturation
+  billingName       String?
+  billingEmail      String?
+  billingAddress    String?
+  billingPostalCode String?
+  billingCity       String?
+  billingCountry    String  @default("FR")
+
+  stripeCustomerId String?  @unique
+  duplicateFlags   String[]
+  isDemo           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  members        CompanyMember[]
+  invitations    CompanyInvitation[]
+  establishments Establishment[]
+  zones          ServiceZone[]
+  verifications  CompanyVerification[]
+  wallet         CreditWallet?
+  ledger         CreditLedgerEntry[]
+  purchases      Purchase[]
+  invoices       Invoice[]
+  unlocks        Unlock[]
+  recipients     RequestRecipient[]
+  offers         Offer[]
+  claims         Claim[]
+  chosenBy       Request[]             @relation("ChosenCompany")
+
+  @@index([status])
+  @@index([siren])
+}
+
+model CompanyMember {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  role      MemberRole @default(MEMBER)
+  createdAt DateTime   @default(now())
+
+  @@index([companyId])
+}
+
+model CompanyInvitation {
+  id          String    @id @default(cuid())
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  email       String
+  tokenHash   String    @unique
+  invitedById String
+  invitedBy   User      @relation("InvitedBy", fields: [invitedById], references: [id])
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model Establishment {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name        String
+  addressLine String
+  postalCode  String
+  city        String
+  phone       String?
+  createdAt   DateTime @default(now())
+}
+
+// Zone desservie : un département entier ou un code postal précis.
+model ServiceZone {
+  id             String  @id @default(cuid())
+  companyId      String
+  company        Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  departmentCode String
+  postalCode     String?
+
+  @@unique([companyId, departmentCode, postalCode])
+  @@index([departmentCode])
+}
+
+// Informations réellement vérifiées par l'administration (le reste est déclaratif).
+model CompanyVerification {
+  id           String   @id @default(cuid())
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  field        String // SIRET, IDENTITY, PHONE, EMAIL, INSURANCE, ...
+  method       String // ex. « Consultation annuaire INSEE », « Appel téléphonique »
+  note         String?
+  verifiedById String
+  verifiedAt   DateTime @default(now())
+
+  @@unique([companyId, field])
+}
+
+// Une seule attribution de crédits de découverte par SIREN (anti-inscriptions multiples).
+model WelcomeGrant {
+  siren     String   @id
+  companyId String   @unique
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Demandes clients
+// ---------------------------------------------------------------------------
+
+enum ClientType {
+  INDIVIDUAL
+  PROFESSIONAL
+}
+
+enum Placement {
+  PRIVATE
+  PUBLIC_ROAD
+  UNKNOWN
+}
+
+enum ContactPreference {
+  PHONE
+  EMAIL
+  BOTH
+}
+
+enum RequestStatus {
+  DRAFT // en cours de saisie / vérification des canaux
+  PUBLISHED // diffusée, déblocable
+  PAUSED // le client a demandé l'arrêt des nouveaux contacts
+  FULFILLED // le client a trouvé un loueur
+  CLOSED // fermée par le client
+  CANCELLED // annulée
+  ARCHIVED // archivée par l'administration (abus, purge)
+}
+
+model Request {
+  id           String        @id @default(cuid())
+  publicRef    String        @unique
+  status       RequestStatus @default(DRAFT)
+  clientType   ClientType
+  companyName  String?
+  clientUserId String?
+  clientUser   User?         @relation("ClientRequests", fields: [clientUserId], references: [id])
+
+  // Données privées : jamais exposées avant déblocage
+  addressLine       String
+  addressComplement String?
+  contactName       String
+  email             String?
+  phone             String?
+  accessDetails     String?
+
+  // Données d'aperçu (non identifiantes)
+  postalCode     String
+  city           String
+  departmentCode String
+  startDate      DateTime
+  endDate        DateTime?
+  flexibleDates  Boolean   @default(false)
+  urgent         Boolean   @default(false)
+  wasteTypes     String[]
+  wasteNotes     String?
+  volumeM3       Int? // null = « Je ne sais pas »
+  placement      Placement
+  accessFlags    String[]
+
+  contactPreference ContactPreference
+  callbackHours     String?
+  emailVerifiedAt   DateTime?
+  phoneVerifiedAt   DateTime?
+
+  // Consentements (séparés)
+  contactConsentAt   DateTime?
+  contactConsentText String?
+  marketingConsent   Boolean   @default(false)
+  marketingConsentAt DateTime?
+
+  maxUnlocks      Int       @default(3)
+  unlockCount     Int       @default(0)
+  publishedAt     DateTime?
+  pausedAt        DateTime?
+  closedAt        DateTime?
+  closeReason     String?
+  chosenCompanyId String?
+  chosenCompany   Company?  @relation("ChosenCompany", fields: [chosenCompanyId], references: [id])
+
+  ipHash      String?
+  fingerprint String? // hash email/téléphone pour détection de doublons
+  isDemo      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  photos            RequestPhoto[]
+  verificationCodes VerificationCode[]
+  accessTokens      ClientAccessToken[]
+  recipients        RequestRecipient[]
+  unlocks           Unlock[]
+  offers            Offer[]
+  claims            Claim[]
+  reports           ClientReport[]
+  permit            Permit?
+
+  @@index([status, departmentCode])
+  @@index([fingerprint])
+}
+
+model RequestPhoto {
+  id         String   @id @default(cuid())
+  requestId  String
+  request    Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  storageKey String   @unique
+  mimeType   String
+  sizeBytes  Int
+  createdAt  DateTime @default(now())
+}
+
+enum ContactChannel {
+  EMAIL
+  PHONE
+}
+
+model VerificationCode {
+  id         String         @id @default(cuid())
+  requestId  String
+  request    Request        @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  channel    ContactChannel
+  target     String
+  codeHash   String
+  attempts   Int            @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime       @default(now())
+
+  @@index([requestId, channel])
+}
+
+// Lien de suivi client : jeton aléatoire stocké haché, temporaire et révocable.
+model ClientAccessToken {
+  id         String    @id @default(cuid())
+  requestId  String
+  request    Request   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([requestId])
+}
+
+// Destinataires sélectionnés présentés au client avant diffusion.
+model RequestRecipient {
+  id         String    @id @default(cuid())
+  requestId  String
+  request    Request   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  companyId  String
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([requestId, companyId])
+  @@index([companyId])
+}
+
+model Unlock {
+  id              String    @id @default(cuid())
+  requestId       String
+  request         Request   @relation(fields: [requestId], references: [id])
+  companyId       String
+  company         Company   @relation(fields: [companyId], references: [id])
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  ledgerEntryId   String    @unique
+  accessExpiresAt DateTime?
+  createdAt       DateTime  @default(now())
+
+  claims Claim[]
+
+  @@unique([requestId, companyId])
+  @@index([companyId])
+}
+
+model ClientReport {
+  id         String    @id @default(cuid())
+  requestId  String
+  request    Request   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  companyId  String?
+  reason     String
+  message    String
+  status     String    @default("OPEN")
+  resolution String?
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Crédits
+// ---------------------------------------------------------------------------
+
+model CreditWallet {
+  companyId String   @id
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  balance   Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+enum LedgerType {
+  WELCOME // crédits offerts
+  PURCHASE // crédits achetés
+  UNLOCK // crédits utilisés
+  RESTITUTION // crédits restitués (réclamation acceptée)
+  ADMIN_ADJUSTMENT // ajustement administratif avec motif
+  PAYMENT_REVERSAL // annulation liée à un paiement remboursé ou contesté
+}
+
+model CreditLedgerEntry {
+  id           String     @id @default(cuid())
+  companyId    String
+  company      Company    @relation(fields: [companyId], references: [id])
+  type         LedgerType
+  amount       Int // positif = crédit, négatif = débit
+  balanceAfter Int
+  reference    String     @unique // référence unique et idempotente de l'opération
+  reason       String?
+  actorUserId  String?
+  purchaseId   String?
+  requestId    String?
+  claimId      String?
+  createdAt    DateTime   @default(now())
+
+  @@index([companyId, createdAt])
+}
+
+model CreditPack {
+  id           String     @id @default(cuid())
+  code         String     @unique
+  name         String
+  credits      Int
+  priceHtCents Int
+  active       Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  purchases    Purchase[]
+}
+
+model PlatformSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
+
+// ---------------------------------------------------------------------------
+// Paiements Stripe (packs de crédits uniquement)
+// ---------------------------------------------------------------------------
+
+enum PurchaseStatus {
+  PENDING // session Checkout créée
+  PROCESSING // paiement différé en attente (ex. virement SEPA)
+  PAID
+  FAILED
+  EXPIRED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  DISPUTED
+  DISPUTE_LOST
+}
+
+model Purchase {
+  id                    String         @id @default(cuid())
+  companyId             String
+  company               Company        @relation(fields: [companyId], references: [id])
+  userId                String
+  packId                String
+  pack                  CreditPack     @relation(fields: [packId], references: [id])
+  // Instantané des conditions au moment de l'achat
+  credits               Int
+  priceHtCents          Int
+  vatRateBp             Int // TVA en points de base (2000 = 20 %)
+  vatCents              Int
+  priceTtcCents         Int
+  currency              String         @default("eur")
+  status                PurchaseStatus @default(PENDING)
+  stripeCheckoutId      String?        @unique
+  stripePaymentIntentId String?        @unique
+  stripeChargeId        String?
+  receiptUrl            String? // justificatif de paiement Stripe (≠ facture)
+  creditsGrantedAt      DateTime?
+  creditsReversed       Int            @default(0)
+  refundedCents         Int            @default(0)
+  needsAdminReview      Boolean        @default(false)
+  adminReviewNote       String?
+  paidAt                DateTime?
+  failureReason         String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  invoice     Invoice?
+  creditNotes CreditNote[]
+
+  @@index([companyId, createdAt])
+}
+
+model StripeEvent {
+  id          String   @id // identifiant d'événement Stripe (evt_...)
+  type        String
+  processedAt DateTime @default(now())
+  outcome     String?
+}
+
+// Facture émise par la plateforme (distincte du justificatif de paiement Stripe).
+model Invoice {
+  id             String   @id @default(cuid())
+  number         String   @unique
+  purchaseId     String   @unique
+  purchase       Purchase @relation(fields: [purchaseId], references: [id])
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id])
+  issuedAt       DateTime @default(now())
+  sellerSnapshot Json
+  buyerSnapshot  Json
+  lines          Json
+  totalHtCents   Int
+  vatCents       Int
+  totalTtcCents  Int
+}
+
+model CreditNote {
+  id             String   @id @default(cuid())
+  number         String   @unique
+  purchaseId     String
+  purchase       Purchase @relation(fields: [purchaseId], references: [id])
+  stripeRefundId String?  @unique
+  amountTtcCents Int
+  reason         String?
+  issuedAt       DateTime @default(now())
+}
+
+model DocumentCounter {
+  key   String @id // ex. INV-2026
+  value Int    @default(0)
+}
+
+// ---------------------------------------------------------------------------
+// Réclamations sur la qualité des contacts
+// ---------------------------------------------------------------------------
+
+enum ClaimReason {
+  INVALID_CONTACT // fausses coordonnées ou inutilisables
+  FRAUDULENT // demande frauduleuse
+  DUPLICATE // doublon déjà acheté par cette entreprise
+  MISMATCH // besoin manifestement différent de l'aperçu
+  OUT_OF_CRITERIA // hors zone / hors services annoncés
+}
+
+enum ClaimStatus {
+  OPEN
+  ACCEPTED
+  REJECTED
+}
+
+model Claim {
+  id           String      @id @default(cuid())
+  unlockId     String      @unique
+  unlock       Unlock      @relation(fields: [unlockId], references: [id])
+  companyId    String
+  company      Company     @relation(fields: [companyId], references: [id])
+  requestId    String
+  request      Request     @relation(fields: [requestId], references: [id])
+  reason       ClaimReason
+  details      String
+  status       ClaimStatus @default(OPEN)
+  resolution   String?
+  resolvedById String?
+  resolvedAt   DateTime?
+  createdById  String
+  createdAt    DateTime    @default(now())
+
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Offres des loueurs
+// ---------------------------------------------------------------------------
+
+enum OfferStatus {
+  SENT
+  WITHDRAWN
+  CHOSEN
+  DECLINED
+}
+
+model Offer {
+  id                    String      @id @default(cuid())
+  requestId             String
+  request               Request     @relation(fields: [requestId], references: [id])
+  companyId             String
+  company               Company     @relation(fields: [companyId], references: [id])
+  userId                String
+  user                  User        @relation(fields: [userId], references: [id])
+  volumeM3              Int
+  wasteAllowed          String
+  wasteExcluded         String
+  includesDelivery      Boolean
+  includesTransport     Boolean
+  includesPickup        Boolean
+  includedDays          Int
+  weightMode            String // INCLUDED | ACTUAL
+  includedTonnes        Decimal?    @db.Decimal(6, 2)
+  pricePerTonneCents    Int?
+  pricePerExtraDayCents Int?
+  otherFees             String?
+  amountHtCents         Int
+  vatRateBp             Int
+  vatCents              Int
+  amountTtcCents        Int
+  proposedAvailability  String
+  validUntil            DateTime
+  message               String?
+  status                OfferStatus @default(SENT)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@index([requestId])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED // échec définitif après reprises
+  SKIPPED_NOT_CONFIGURED
+  SKIPPED_PREFERENCE
+  SKIPPED_CAP
+}
+
+model Notification {
+  id            String              @id @default(cuid())
+  channel       NotificationChannel
+  kind          String
+  dedupeKey     String              @unique
+  userId        String?
+  user          User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId     String?
+  requestId     String?
+  toAddress     String? // email / téléphone (canaux externes uniquement)
+  title         String
+  body          String
+  link          String?
+  status        NotificationStatus  @default(PENDING)
+  attempts      Int                 @default(0)
+  nextAttemptAt DateTime            @default(now())
+  lastError     String?
+  sentAt        DateTime?
+  readAt        DateTime?
+  createdAt     DateTime            @default(now())
+
+  @@index([status, nextAttemptAt])
+  @@index([userId, channel, readAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Autorisation de voirie
+// ---------------------------------------------------------------------------
+
+enum PermitStatus {
+  TO_PREPARE
+  READY
+  SENT_BY_USER
+  RECEIPT_CONFIRMED
+  INFO_REQUESTED
+  GRANTED
+  REFUSED
+}
+
+model Permit {
+  id                    String           @id @default(cuid())
+  requestId             String           @unique
+  request               Request          @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  status                PermitStatus     @default(TO_PREPARE)
+  locationDetails       String?
+  startDate             DateTime?
+  endDate               DateTime?
+  lengthM               Decimal?         @db.Decimal(5, 2)
+  widthM                Decimal?         @db.Decimal(5, 2)
+  heightM               Decimal?         @db.Decimal(5, 2)
+  dimensionsConfirmed   Boolean          @default(false)
+  applicantName         String?
+  applicantQuality      String?
+  authorityId           String?
+  authority             PermitAuthority? @relation(fields: [authorityId], references: [id])
+  sentAt                DateTime?
+  sentVia               String? // EMAIL_FROM_APP | USER_DOWNLOAD
+  sendConfirmedByUserAt DateTime?
+  decisionAt            DateTime?
+  notes                 String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  files  PermitFile[]
+  events PermitEvent[]
+}
+
+model PermitFile {
+  id         String   @id @default(cuid())
+  permitId   String
+  permit     Permit   @relation(fields: [permitId], references: [id], onDelete: Cascade)
+  kind       String // PLAN | PHOTO | AUTHORIZATION | OTHER
+  storageKey String   @unique
+  mimeType   String
+  sizeBytes  Int
+  createdAt  DateTime @default(now())
+}
+
+model PermitEvent {
+  id        String       @id @default(cuid())
+  permitId  String
+  permit    Permit       @relation(fields: [permitId], references: [id], onDelete: Cascade)
+  status    PermitStatus
+  note      String?
+  createdAt DateTime     @default(now())
+}
+
+// Annuaire administrable des démarches locales.
+model PermitAuthority {
+  id                      String    @id @default(cuid())
+  name                    String
+  kind                    String // MAIRIE | METROPOLE | DEPARTEMENT | AUTRE
+  departmentCode          String
+  postalCodes             String[]
+  inseeCodes              String[]
+  portalUrl               String?
+  formUrl                 String?
+  email                   String?
+  phone                   String?
+  instructions            String?
+  feesInfo                String?
+  delayInfo               String?
+  // Canal de dépôt depuis l'application : uniquement si vérifié par l'administration
+  submissionEmail         String?
+  submissionEmailVerified Boolean   @default(false)
+  knownFormTemplate       String? // identifiant de modèle connu (sinon pas de préremplissage)
+  lastVerifiedAt          DateTime?
+  verifiedBy              String?
+  active                  Boolean   @default(true)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  permits Permit[]
+
+  @@index([departmentCode])
+}
+
+// ---------------------------------------------------------------------------
+// Audit, limitation de débit
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  actor       User?    @relation(fields: [actorUserId], references: [id])
+  actorType   String // ADMIN | PROVIDER | CLIENT | SYSTEM | STRIPE
+  action      String
+  entityType  String
+  entityId    String
+  data        Json?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model RateLimitBucket {
+  key         String   @id
+  count       Int
+  windowStart DateTime
+}
