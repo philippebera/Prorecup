@@ -33,12 +33,12 @@ export function OfferCard({ offer, companyName }: { offer: Offer; companyName: s
         {offer.status === "CHOSEN" && <Badge tone="blue">Choisie</Badge>}
         {expired && <Badge tone="amber">Validité dépassée</Badge>}
       </div>
-      <dl className="mt-3 divide-y divide-slate-100 text-sm">
+      <dl className="mt-3 divide-y divide-black/5 text-sm">
         {rows.map(([k, v]) => (
           <div key={k} className="grid grid-cols-5 gap-2 py-1.5"><dt className="col-span-2 text-ink-mute">{k}</dt><dd className="col-span-3">{v}</dd></div>
         ))}
       </dl>
-      {offer.message && <p className="mt-3 whitespace-pre-line rounded-lg bg-slate-50 p-3 text-sm">{offer.message}</p>}
+      {offer.message && <p className="mt-3 whitespace-pre-line rounded-2xl bg-canvas p-3 text-sm">{offer.message}</p>}
       <p className="mt-3 text-xs text-ink-mute">Le prix et le paiement se règlent directement avec l&apos;entreprise. La plateforme ne prélève aucune commission.</p>
     </div>
   );

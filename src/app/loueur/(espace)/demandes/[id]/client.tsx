@@ -25,21 +25,27 @@ export function UnlockPanel({ requestId, available, approved, balance, warning, 
   }
 
   return (
-    <div className="card space-y-3">
-      <h2 className="font-bold">Obtenir les coordonnées</h2>
+    <div className="card-dark space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-extrabold">Obtenir les coordonnées</h2>
+        <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">Solde <span className="text-lime">{balance}</span></span>
+      </div>
       {balance < 1 ? (
         <>
           <Alert tone="warn">Solde insuffisant. Achetez un pack : le contact ne sera pas débloqué automatiquement, une nouvelle confirmation vous sera demandée.</Alert>
           <div className="flex flex-col gap-2">
-            {packs.map((p) => <button key={p.id} className="btn-secondary" disabled={busy} onClick={() => buy(p.id)}>{p.name}</button>)}
+            {packs.map((p) => <button key={p.id} className="btn bg-white/10 text-white hover:bg-white/15" disabled={busy} onClick={() => buy(p.id)}>{p.name}</button>)}
           </div>
-          <a className="text-sm text-brand-700 underline" href="/loueur/portefeuille">Voir les prix HT et TTC</a>
+          <a className="text-sm font-semibold text-lime underline underline-offset-4" href="/loueur/portefeuille">Voir les prix HT et TTC</a>
         </>
       ) : !confirming ? (
-        <button className="btn-primary w-full" onClick={() => setConfirming(true)}>Débloquer ce contact</button>
+        <button className="flex w-full items-center justify-between rounded-full bg-lime py-2.5 pl-5 pr-2.5 font-bold text-ink transition hover:bg-lime-dark active:scale-[0.98]" onClick={() => setConfirming(true)}>
+          Débloquer ce contact
+          <span aria-hidden className="grid h-9 w-9 place-items-center rounded-full bg-ink text-lime">→</span>
+        </button>
       ) : (
-        <div role="dialog" aria-modal="false" aria-labelledby="unlock-title" className="space-y-3 rounded-lg border border-amber-300 bg-amber-50 p-3">
-          <p id="unlock-title" className="font-semibold text-amber-900">{warning}</p>
+        <div role="dialog" aria-modal="false" aria-labelledby="unlock-title" className="space-y-3 rounded-3xl bg-white p-4 text-ink">
+          <p id="unlock-title" className="font-semibold">{warning}</p>
           <div className="flex gap-2">
             <button className="btn-primary" disabled={busy} onClick={async () => {
               setBusy(true);
@@ -122,7 +128,7 @@ export function OfferForm({ requestId, defaultVolume }: { requestId: string; def
       <fieldset className="flex flex-wrap gap-4 text-sm">
         <legend className="label">Inclus dans le prix</legend>
         {([["includesDelivery", "Pose"], ["includesTransport", "Transport"], ["includesPickup", "Retrait"]] as const).map(([k, l]) => (
-          <label key={k} className="flex items-center gap-2"><input type="checkbox" className="h-5 w-5 accent-brand-600" checked={f[k] as boolean} onChange={(e) => set(k, e.target.checked)} />{l}</label>
+          <label key={k} className="flex items-center gap-2"><input type="checkbox" className="h-5 w-5 accent-ink" checked={f[k] as boolean} onChange={(e) => set(k, e.target.checked)} />{l}</label>
         ))}
       </fieldset>
       <div className="grid gap-3 sm:grid-cols-3">

@@ -54,14 +54,16 @@ export function LogoutButton() {
   const router = useRouter();
   return (
     <button
-      className="text-sm font-medium text-ink-soft hover:text-ink"
+      aria-label="Déconnexion"
+      className="grid h-9 w-9 place-items-center rounded-full bg-white text-sm font-semibold text-ink-soft ring-1 ring-black/[0.06] hover:text-ink sm:w-auto sm:px-3.5"
       onClick={async () => {
         await callApi("/api/auth/logout", "POST", {});
         router.push("/");
         router.refresh();
       }}
     >
-      Déconnexion
+      <span className="hidden sm:inline">Déconnexion</span>
+      <svg aria-hidden className="h-4 w-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5" /><path d="M21 12H9" /></svg>
     </button>
   );
 }
@@ -89,17 +91,17 @@ export function NotificationListener() {
   }, []);
   return (
     <>
-      <Link href="/notifications" className="relative text-sm font-medium text-ink-soft hover:text-ink" aria-label={`Notifications (${unread} non lues)`}>
-        🔔{unread > 0 && <span className="absolute -right-2 -top-2 rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">{unread}</span>}
+      <Link href="/notifications" className="relative grid h-9 w-9 place-items-center rounded-full bg-white text-sm ring-1 ring-black/[0.06]" aria-label={`Notifications (${unread} non lues)`}>
+        🔔{unread > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-lime px-1.5 text-[10px] font-extrabold text-ink ring-2 ring-canvas">{unread}</span>}
       </Link>
       <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4 sm:items-end" aria-live="polite">
         {toasts.map((t) => (
-          <div key={t.id} className="pointer-events-auto w-full max-w-sm rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
+          <div key={t.id} className="pointer-events-auto w-full max-w-sm rounded-3xl bg-ink p-4 text-white shadow-float">
             <p className="font-semibold">{t.title}</p>
-            <p className="mt-1 text-sm text-ink-soft">{t.body}</p>
+            <p className="mt-1 text-sm text-white/70">{t.body}</p>
             <div className="mt-2 flex gap-3 text-sm">
-              {t.link && <Link className="font-semibold text-brand-700" href={t.link}>Voir</Link>}
-              <button className="text-ink-mute" onClick={() => setToasts((x) => x.filter((y) => y.id !== t.id))}>Fermer</button>
+              {t.link && <Link className="rounded-full bg-lime px-3 py-1 font-semibold text-ink" href={t.link}>Voir</Link>}
+              <button className="text-white/60" onClick={() => setToasts((x) => x.filter((y) => y.id !== t.id))}>Fermer</button>
             </div>
           </div>
         ))}

@@ -175,25 +175,31 @@ export function RequestWizard({ maxUnlocks, emailAvailable, phoneAvailable, capt
 
   if (done && created)
     return (
-      <div className="card text-center">
-        <p className="text-4xl" aria-hidden>✅</p>
-        <h1 className="mt-2 text-2xl font-bold">Votre demande {created.publicRef} est diffusée</h1>
-        <p className="mt-2 text-ink-soft">Elle a été transmise à {done.recipients} entreprise(s). {maxUnlocks} au maximum pourront obtenir vos coordonnées et vous contacter.</p>
-        <p className="mt-2 text-sm text-ink-mute">Nous ne pouvons pas garantir de réponse ni de délai : cela dépend des loueurs.</p>
-        <Link href={`/suivi/${created.id}`} className="btn-primary mt-6">Suivre ma demande</Link>
-        <p className="mt-3 text-sm text-ink-mute">Votre espace de suivi est accessible depuis cet appareil. {wantsEmail ? "Un lien de suivi temporaire vous est également envoyé par email." : ""}</p>
+      <div className="card-dark overflow-hidden text-center">
+        <span aria-hidden className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-lime text-3xl font-black text-ink">✓</span>
+        <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-white/50">Demande {created.publicRef}</p>
+        <h1 className="mt-1 text-3xl font-extrabold">C&apos;est envoyé.</h1>
+        <p className="mt-3 text-white/70">Transmise à {done.recipients} entreprise(s). {maxUnlocks} au maximum pourront obtenir vos coordonnées et vous contacter.</p>
+        <p className="mt-2 text-sm text-white/50">Nous ne pouvons garantir ni réponse ni délai : cela dépend des loueurs.</p>
+        <Link href={`/suivi/${created.id}`} className="btn-primary mt-7 w-full sm:w-auto">Suivre ma demande →</Link>
+        <p className="mt-4 text-sm text-white/50">Votre espace de suivi est accessible depuis cet appareil.{wantsEmail ? " Un lien de suivi temporaire vous est aussi envoyé par email." : ""}</p>
       </div>
     );
 
   return (
     <div>
-      <div className="mb-6">
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-semibold text-brand-700">Étape {step + 1} sur {STEPS.length} · {STEPS[step]}</span>
-          <span className="text-ink-mute">{progress} %</span>
+      <div className="card-dark mb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/50">Étape {step + 1} sur {STEPS.length}</p>
+            <p className="mt-0.5 text-2xl font-extrabold">{STEPS[step]}</p>
+          </div>
+          <span className="rounded-full bg-lime px-3 py-1 text-sm font-extrabold text-ink">{progress} %</span>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-          <div className="h-full rounded-full bg-brand-600 transition-all" style={{ width: `${progress}%` }} />
+        <div className="mt-4 flex gap-1" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Progression">
+          {STEPS.map((_, i) => (
+            <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i < step || done ? "bg-lime" : i === step ? "bg-lime/60" : "bg-white/15"}`} />
+          ))}
         </div>
       </div>
 
@@ -244,8 +250,8 @@ export function RequestWizard({ maxUnlocks, emailAvailable, phoneAvailable, capt
             <div className="grid gap-3">
               {WASTE_TYPES.map((w) => (
                 <button type="button" key={w.code} onClick={() => toggle("wasteTypes", w.code)} aria-pressed={f.wasteTypes.includes(w.code)}
-                  className={`rounded-xl border p-3 text-left transition ${f.wasteTypes.includes(w.code) ? "border-brand-500 bg-brand-50 ring-2 ring-brand-200" : "border-slate-200 bg-white hover:border-slate-300"}`}>
-                  <span className="flex items-center gap-2 font-semibold"><span aria-hidden className="text-2xl">{w.icon}</span>{w.label}</span>
+                  className={`rounded-3xl p-4 text-left transition active:scale-[0.99] ${f.wasteTypes.includes(w.code) ? "bg-lime ring-2 ring-ink" : "bg-canvas hover:bg-lime-soft"}`}>
+                  <span className="flex items-center gap-3 font-bold"><span aria-hidden className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-xl">{w.icon}</span><span className="flex-1">{w.label}</span>{f.wasteTypes.includes(w.code) && <span aria-hidden className="grid h-6 w-6 place-items-center rounded-full bg-ink text-xs text-lime">✓</span>}</span>
                   <span className="mt-1 block text-sm text-ink-soft">Ex. : {w.examples}</span>
                   <span className="mt-0.5 block text-xs text-ink-mute">Hors : {w.excluded}</span>
                 </button>
@@ -267,7 +273,7 @@ export function RequestWizard({ maxUnlocks, emailAvailable, phoneAvailable, capt
               ))}
               <Choice selected={f.volumeM3 === null} onClick={() => set("volumeM3", null)} label="Je ne sais pas" sub="Les loueurs vous conseilleront" />
             </div>
-            <Link href="/guides/choisir-volume-benne" target="_blank" className="text-sm font-semibold text-brand-700">Aide pour estimer le volume ↗</Link>
+            <Link href="/guides/choisir-volume-benne" target="_blank" className="text-sm font-bold underline decoration-lime decoration-4 underline-offset-4">Aide pour estimer le volume ↗</Link>
           </>
         )}
 
@@ -348,15 +354,15 @@ export function RequestWizard({ maxUnlocks, emailAvailable, phoneAvailable, capt
             ) : (
               <>
                 <p className="text-sm text-ink-soft">Votre demande sera présentée, sans vos coordonnées ni votre adresse exacte, à ces {recipients.length} entreprise(s) :</p>
-                <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">
-                  {recipients.map((r) => <li key={r.id} className="px-3 py-2"><span className="font-medium">{r.name}</span> <span className="text-sm text-ink-mute">· {r.city}</span></li>)}
+                <ul className="divide-y divide-black/5 rounded-3xl bg-canvas">
+                  {recipients.map((r) => <li key={r.id} className="flex items-center gap-3 px-4 py-3"><span aria-hidden className="grid h-9 w-9 place-items-center rounded-full bg-ink text-sm font-bold text-lime">{r.name.slice(0, 1)}</span><span className="font-semibold">{r.name}</span> <span className="text-sm text-ink-mute">· {r.city}</span></li>)}
                 </ul>
                 <Alert tone="info" title={`${maxUnlocks} entreprises au maximum`}>
                   Parmi elles, {maxUnlocks} entreprises au maximum pourront débloquer vos coordonnées ({f.contactPreference === "BOTH" ? "téléphone et email" : f.contactPreference === "PHONE" ? "téléphone" : "email"}) et l&apos;adresse du chantier pour vous contacter. Vous saurez lesquelles dans votre espace de suivi.
                 </Alert>
                 <Check checked={consent} onChange={setConsent}
                   label={`Je demande à être contacté(e) par ${f.contactPreference === "BOTH" ? "téléphone et email" : f.contactPreference === "PHONE" ? "téléphone" : "email"} au sujet de cette demande, par ${maxUnlocks} entreprises au maximum parmi celles listées ci-dessus.`} />
-                <div className="rounded-lg border border-slate-200 p-3">
+                <div className="rounded-3xl bg-canvas p-3">
                   <Check checked={marketing} onChange={setMarketing} label="Facultatif : j'accepte de recevoir des informations commerciales de la plateforme." hint="Indépendant de votre demande : refuser n'a aucune incidence. Aucune prospection par les loueurs n'est autorisée." />
                 </div>
               </>
@@ -394,8 +400,8 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 export function Check({ checked, onChange, label, hint }: { checked: boolean; onChange: (v: boolean) => void; label: string; hint?: string }) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-lg p-1">
-      <input type="checkbox" className="mt-1 h-5 w-5 shrink-0 accent-brand-600" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+    <label className="flex cursor-pointer items-start gap-3 rounded-2xl p-1">
+      <input type="checkbox" className="mt-1 h-5 w-5 shrink-0 accent-ink" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span>
         <span className="text-sm">{label}</span>
         {hint && <span className="block text-xs text-ink-mute">{hint}</span>}
@@ -407,10 +413,11 @@ export function Check({ checked, onChange, label, hint }: { checked: boolean; on
 function Choice({ selected, onClick, label, sub, icon, disabled }: { selected: boolean; onClick: () => void; label: string; sub?: string; icon?: string; disabled?: boolean }) {
   return (
     <button type="button" disabled={disabled} onClick={onClick} aria-pressed={selected}
-      className={`rounded-xl border p-4 text-left transition disabled:opacity-50 ${selected ? "border-brand-500 bg-brand-50 ring-2 ring-brand-200" : "border-slate-200 bg-white hover:border-slate-300"}`}>
-      {icon && <span aria-hidden className="mb-1 block text-2xl">{icon}</span>}
-      <span className="block font-semibold">{label}</span>
-      {sub && <span className="mt-0.5 block text-xs text-ink-mute">{sub}</span>}
+      className={`relative rounded-3xl p-4 text-left transition active:scale-[0.98] disabled:opacity-40 ${selected ? "bg-lime ring-2 ring-ink" : "bg-canvas hover:bg-lime-soft"}`}>
+      {selected && <span aria-hidden className="absolute right-3 top-3 grid h-6 w-6 place-items-center rounded-full bg-ink text-xs text-lime">✓</span>}
+      {icon && <span aria-hidden className="mb-2 grid h-10 w-10 place-items-center rounded-full bg-white text-xl">{icon}</span>}
+      <span className="block font-bold">{label}</span>
+      {sub && <span className={`mt-0.5 block text-xs ${selected ? "text-ink/70" : "text-ink-mute"}`}>{sub}</span>}
     </button>
   );
 }
@@ -428,9 +435,9 @@ function Summary({ f, photos }: { f: Form; photos: number }) {
     ["Contact", [f.contactName, f.contactPreference !== "PHONE" ? f.email : null, f.contactPreference !== "EMAIL" ? f.phone : null].filter(Boolean).join(" · ")],
   ];
   return (
-    <dl className="divide-y divide-slate-100 rounded-lg border border-slate-200 text-sm">
+    <dl className="divide-y divide-black/5 rounded-3xl bg-canvas text-sm">
       {rows.map(([k, v]) => (
-        <div key={k} className="grid grid-cols-3 gap-2 px-3 py-2"><dt className="text-ink-mute">{k}</dt><dd className="col-span-2">{v}</dd></div>
+        <div key={k} className="grid grid-cols-3 gap-2 px-4 py-3"><dt className="text-ink-mute">{k}</dt><dd className="col-span-2">{v}</dd></div>
       ))}
     </dl>
   );
@@ -444,7 +451,7 @@ export function Verify({ requestId, channel, target, verified, onVerified }: { r
   const label = channel === "EMAIL" ? "Email" : "Téléphone";
   if (verified) return <Alert tone="success">{label} vérifié : {target}</Alert>;
   return (
-    <div className="rounded-lg border border-slate-200 p-4">
+    <div className="rounded-3xl bg-canvas p-4">
       <p className="font-semibold">{label} : {target}</p>
       {!sent ? (
         <button type="button" className="btn-secondary btn-sm mt-2" disabled={busy} onClick={async () => {
@@ -458,7 +465,7 @@ export function Verify({ requestId, channel, target, verified, onVerified }: { r
         <div className="mt-2 space-y-2">
           <p className="text-sm text-ink-soft">{sent === "sent" ? "Code envoyé. Saisissez les 6 chiffres reçus." : "Mode développement : aucun fournisseur configuré, le code est affiché dans la console du serveur (aucun message n'a été envoyé)."}</p>
           <div className="flex gap-2">
-            <input className="input max-w-[10rem] text-center text-lg tracking-widest" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} aria-label="Code de vérification" />
+            <input className="input max-w-[11rem] text-center text-2xl font-bold tracking-[0.3em]" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} aria-label="Code de vérification" />
             <button type="button" className="btn-primary" disabled={code.length !== 6 || busy} onClick={async () => {
               setBusy(true); setMsg(null);
               const r = await callApi(`/api/requests/${requestId}/verify`, "POST", { channel, code });
@@ -467,7 +474,7 @@ export function Verify({ requestId, channel, target, verified, onVerified }: { r
               onVerified();
             }}>Vérifier</button>
           </div>
-          <button type="button" className="text-sm text-brand-700 underline" onClick={() => { setSent(null); setCode(""); }}>Renvoyer un code</button>
+          <button type="button" className="text-sm font-semibold underline decoration-lime decoration-2 underline-offset-4" onClick={() => { setSent(null); setCode(""); }}>Renvoyer un code</button>
         </div>
       )}
       {msg && <p className="mt-2 text-sm text-red-700">{msg}</p>}

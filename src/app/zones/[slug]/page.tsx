@@ -35,7 +35,7 @@ export default async function ZonePage({ params }: Props) {
       <ul className="grid gap-3 sm:grid-cols-2">
         {companies.map((c) => (
           <li key={c.slug}>
-            <Link href={`/loueurs/${c.slug}`} className="card block h-full hover:border-brand-300">
+            <Link href={`/loueurs/${c.slug}`} className="card block h-full transition hover:-translate-y-0.5">
               <p className="font-semibold">{c.tradeName || c.legalName}</p>
               <p className="text-sm text-ink-mute">{c.city}</p>
               <p className="mt-2 text-sm">Bennes : {c.skipSizesM3.map((s) => `${s} m³`).join(", ")}</p>

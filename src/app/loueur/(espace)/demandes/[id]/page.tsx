@@ -48,7 +48,7 @@ export default async function DemandeDetail({ params, searchParams }: Props) {
     <>
       <nav className="mb-3 text-sm"><Link className="text-brand-700" href="/loueur/demandes">← Demandes</Link></nav>
       <PageTitle
-        title={`Demande ${preview.publicRef}`}
+        title={`Demande ${preview.publicRef.replace("-", "\u2011")}`}
         subtitle={<span className="flex flex-wrap gap-2">{preview.urgent && <Badge tone="red">Urgent</Badge>}{details ? <Badge tone="blue">Débloquée</Badge> : preview.available ? <Badge tone="green">Ouverte</Badge> : <Badge>Indisponible</Badge>}</span>}
       />
 
@@ -73,7 +73,7 @@ export default async function DemandeDetail({ params, searchParams }: Props) {
           </section>
 
           {details && !details.expired && (
-            <section className="card border-brand-300">
+            <section className="card ring-2 ring-lime">
               <h2 className="mb-3 text-lg font-bold">Coordonnées et adresse du chantier</h2>
               {details.closedStatus && <div className="mb-3"><Alert tone="warn">Le client a clôturé cette demande ({details.closedStatus === "FULFILLED" ? "loueur trouvé" : "fermée ou annulée"}).</Alert></div>}
               <DL items={[
@@ -94,7 +94,7 @@ export default async function DemandeDetail({ params, searchParams }: Props) {
               {details.photos.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {details.photos.map((p) => (
-                    <a key={p.id} href={p.url} target="_blank" rel="noreferrer"><img src={p.url} alt="Photo du chantier" className="h-28 w-28 rounded-lg object-cover" /></a>
+                    <a key={p.id} href={p.url} target="_blank" rel="noreferrer"><img src={p.url} alt="Photo du chantier" className="h-28 w-28 rounded-2xl object-cover" /></a>
                   ))}
                 </div>
               )}

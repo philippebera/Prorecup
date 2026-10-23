@@ -20,7 +20,7 @@ export default async function AdminNotifications() {
         <p className="mt-2 text-xs text-ink-mute">SKIPPED_NOT_CONFIGURED : aucun envoi n&apos;a eu lieu car le service n&apos;est pas configuré. Rien n&apos;est présenté comme envoyé.</p>
       </div>
       <h2 className="mb-2 font-bold">Échecs et envois non effectués</h2>
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-3xl bg-white shadow-soft ring-1 ring-black/[0.04]">
         <table className="table">
           <thead><tr><th>Date</th><th>Canal</th><th>Type</th><th>Statut</th><th>Essais</th><th>Erreur</th><th></th></tr></thead>
           <tbody>{problems.map((n) => (

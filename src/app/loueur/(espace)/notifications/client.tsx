@@ -20,10 +20,10 @@ export function PrefsForm({ initial, smsAvailable }: { initial: Prefs; smsAvaila
       router.refresh();
     }}>
       <p className="text-sm text-ink-soft">Les notifications dans l&apos;application sont toujours actives.</p>
-      <label className="flex items-center gap-2"><input type="checkbox" className="h-5 w-5 accent-brand-600" checked={p.notifyEmail} onChange={(e) => setP({ ...p, notifyEmail: e.target.checked })} />Email à chaque utilisateur</label>
-      <label className="flex items-center gap-2"><input type="checkbox" className="h-5 w-5 accent-brand-600" checked={p.notifyPush} onChange={(e) => setP({ ...p, notifyPush: e.target.checked })} />Notifications push (appareils abonnés)</label>
+      <label className="flex items-center gap-2"><input type="checkbox" className="h-5 w-5 accent-ink" checked={p.notifyEmail} onChange={(e) => setP({ ...p, notifyEmail: e.target.checked })} />Email à chaque utilisateur</label>
+      <label className="flex items-center gap-2"><input type="checkbox" className="h-5 w-5 accent-ink" checked={p.notifyPush} onChange={(e) => setP({ ...p, notifyPush: e.target.checked })} />Notifications push (appareils abonnés)</label>
       <div>
-        <label className="flex items-center gap-2"><input type="checkbox" className="h-5 w-5 accent-brand-600" disabled={!smsAvailable} checked={p.notifySms} onChange={(e) => setP({ ...p, notifySms: e.target.checked })} />SMS pour les nouvelles demandes (un seul SMS par demande pour l&apos;entreprise, plafonné par jour)</label>
+        <label className="flex items-center gap-2"><input type="checkbox" className="h-5 w-5 accent-ink" disabled={!smsAvailable} checked={p.notifySms} onChange={(e) => setP({ ...p, notifySms: e.target.checked })} />SMS pour les nouvelles demandes (un seul SMS par demande pour l&apos;entreprise, plafonné par jour)</label>
         {p.notifySms && <input className="input mt-2 max-w-xs" placeholder="Numéro mobile" value={p.smsPhone} onChange={(e) => setP({ ...p, smsPhone: e.target.value })} />}
       </div>
       <fieldset>

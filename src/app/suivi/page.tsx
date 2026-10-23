@@ -19,7 +19,7 @@ export default async function SuiviPage() {
         <ul className="space-y-3">
           {requests.map((r) => (
             <li key={r.id}>
-              <Link href={`/suivi/${r.id}`} className="card flex items-center justify-between hover:border-brand-300">
+              <Link href={`/suivi/${r.id}`} className="card flex items-center justify-between transition hover:-translate-y-0.5">
                 <span>
                   <span className="font-semibold">{r.publicRef}</span> · {r.city} · pose le {dateFr(r.startDate)}
                   <span className="block text-sm text-ink-mute">{r.unlockCount} / {r.maxUnlocks} entreprise(s) ont obtenu vos coordonnées</span>

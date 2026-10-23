@@ -14,7 +14,7 @@ export default async function ZonesPage() {
       {deps.length === 0 ? <Empty>Aucune zone couverte pour le moment : la plateforme est en cours de lancement.</Empty> : (
         <ul className="grid gap-2 sm:grid-cols-3">
           {deps.map((d) => (
-            <li key={d.code}><Link className="card block hover:border-brand-300" href={`/zones/${d.slug}`}><span className="font-semibold">{d.name} ({d.code})</span><span className="block text-sm text-ink-mute">{d.companies} loueur(s) inscrit(s)</span></Link></li>
+            <li key={d.code}><Link className="card block transition hover:-translate-y-0.5" href={`/zones/${d.slug}`}><span className="font-semibold">{d.name} ({d.code})</span><span className="block text-sm text-ink-mute">{d.companies} loueur(s) inscrit(s)</span></Link></li>
           ))}
         </ul>
       )}

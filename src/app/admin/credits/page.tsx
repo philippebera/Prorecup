@@ -18,7 +18,7 @@ export default async function AdminCredits({ searchParams }: Props) {
       <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-6">
         {totals.map((t) => <Link key={t.type} href={`/admin/credits?type=${t.type}`} className="card p-3 text-sm"><span className="block text-ink-mute">{t.type}</span><strong>{t._sum.amount}</strong> ({t._count})</Link>)}
       </div>
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-3xl bg-white shadow-soft ring-1 ring-black/[0.04]">
         <table className="table">
           <thead><tr><th>Date</th><th>Entreprise</th><th>Type</th><th>Montant</th><th>Solde</th><th>Motif</th><th>Référence</th></tr></thead>
           <tbody>{entries.map((e) => (

@@ -83,7 +83,7 @@ export function CompanyForm({ mode, initial }: { mode: "register" | "edit"; init
           <div className="col-span-2">{input("city", "Commune", { required: true })}</div>
         </div>
         <label className="block"><span className="label">Présentation (profil public)</span><textarea className="input" rows={3} value={f.description} onChange={(e) => set("description", e.target.value)} maxLength={1500} /></label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-5 w-5 accent-brand-600" checked={f.publicProfile} onChange={(e) => set("publicProfile", e.target.checked)} />Afficher un profil public (après validation)</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-5 w-5 accent-ink" checked={f.publicProfile} onChange={(e) => set("publicProfile", e.target.checked)} />Afficher un profil public (après validation)</label>
       </section>
 
       <section className="card space-y-4">
@@ -107,9 +107,9 @@ export function CompanyForm({ mode, initial }: { mode: "register" | "edit"; init
       <section className="card space-y-3">
         <h2 className="text-lg font-bold">Zones desservies</h2>
         <p className="text-sm text-ink-soft">Vous recevrez les demandes des départements cochés. Pour une couverture partielle d&apos;un département, indiquez plutôt des codes postaux.</p>
-        <div className="grid max-h-64 grid-cols-2 gap-1 overflow-y-auto rounded-lg border border-slate-200 p-2 text-sm sm:grid-cols-3">
+        <div className="grid max-h-64 grid-cols-2 gap-1 overflow-y-auto rounded-2xl border border-black/[0.06] p-2 text-sm sm:grid-cols-3">
           {Object.entries(DEPARTMENTS).map(([code, name]) => (
-            <label key={code} className="flex items-center gap-2"><input type="checkbox" className="accent-brand-600" checked={f.departments.includes(code)} onChange={() => toggle("departments", code)} />{code} {name}</label>
+            <label key={code} className="flex items-center gap-2"><input type="checkbox" className="accent-ink" checked={f.departments.includes(code)} onChange={() => toggle("departments", code)} />{code} {name}</label>
           ))}
         </div>
         <label className="block"><span className="label">Codes postaux supplémentaires (hors départements cochés)</span><input className="input" value={f.postalCodes} onChange={(e) => set("postalCodes", e.target.value)} placeholder="69100, 69200…" /></label>
@@ -137,7 +137,7 @@ export function CompanyForm({ mode, initial }: { mode: "register" | "edit"; init
             {input("password", "Mot de passe (10 caractères min.)", { type: "password", required: true, minLength: 10, autoComplete: "new-password" })}
           </div>
           <p className="text-sm text-ink-soft">Vous pourrez inviter d&apos;autres utilisateurs de l&apos;entreprise. Les crédits sont partagés au niveau de l&apos;entreprise.</p>
-          <label className="flex items-start gap-2 text-sm"><input type="checkbox" className="mt-0.5 h-5 w-5 accent-brand-600" checked={f.acceptTerms} onChange={(e) => set("acceptTerms", e.target.checked)} required />
+          <label className="flex items-start gap-2 text-sm"><input type="checkbox" className="mt-0.5 h-5 w-5 accent-ink" checked={f.acceptTerms} onChange={(e) => set("acceptTerms", e.target.checked)} required />
             <span>J&apos;accepte les <Link className="underline" href="/legal/conditions-loueurs" target="_blank">conditions loueurs et crédits</Link> et m&apos;engage à n&apos;utiliser les coordonnées obtenues que pour répondre aux demandes, sans prospection publicitaire.</span>
           </label>
         </section>
@@ -152,7 +152,7 @@ export function CompanyForm({ mode, initial }: { mode: "register" | "edit"; init
 
 function Pill({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} aria-pressed={on} className={`rounded-full border px-3 py-1.5 text-sm ${on ? "border-brand-500 bg-brand-50 font-semibold text-brand-800" : "border-slate-300 bg-white"}`}>
+    <button type="button" onClick={onClick} aria-pressed={on} className={`rounded-full px-3.5 py-2 text-sm font-semibold transition ${on ? "bg-lime text-ink ring-2 ring-ink" : "bg-canvas text-ink-soft hover:bg-lime-soft"}`}>
       {children}
     </button>
   );

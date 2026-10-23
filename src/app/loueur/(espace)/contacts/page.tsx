@@ -21,7 +21,7 @@ export default async function ContactsPage() {
     <>
       <PageTitle title="Contacts débloqués" subtitle="Accessibles à tous les utilisateurs de l'entreprise, sans nouveau débit." />
       {unlocks.length === 0 ? <Empty>Aucun contact débloqué.</Empty> : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-x-auto rounded-3xl bg-white shadow-soft ring-1 ring-black/[0.04]">
           <table className="table">
             <thead><tr><th>Débloqué le</th><th>Demande</th><th>Client</th><th>Statut</th><th>Offres</th><th>Par</th></tr></thead>
             <tbody>

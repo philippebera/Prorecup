@@ -12,7 +12,7 @@ export default function GuidesPage() {
       <ul className="grid gap-3 sm:grid-cols-2">
         {GUIDES.map((g) => (
           <li key={g.slug}>
-            <Link href={`/guides/${g.slug}`} className="card block h-full hover:border-brand-300">
+            <Link href={`/guides/${g.slug}`} className="card block h-full transition hover:-translate-y-0.5">
               <h2 className="font-semibold">{g.title}</h2>
               <p className="mt-1 text-sm text-ink-soft">{g.description}</p>
             </Link>

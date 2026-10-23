@@ -53,7 +53,7 @@ export default async function VoiriePage({ params }: Props) {
         ) : (
           <ul className="mt-2 space-y-3">
             {authorities.map((a) => (
-              <li key={a.id} className={`rounded-lg border p-3 text-sm ${a.id === p.authorityId ? "border-brand-400 bg-brand-50" : "border-slate-200"}`}>
+              <li key={a.id} className={`rounded-2xl border p-3 text-sm ${a.id === p.authorityId ? "bg-lime-soft ring-2 ring-lime-dark" : "border-black/[0.06]"}`}>
                 <p className="font-semibold">{a.name}</p>
                 {a.instructions && <p className="mt-1 whitespace-pre-line text-ink-soft">{a.instructions}</p>}
                 <ul className="mt-1 space-y-0.5">
@@ -105,7 +105,7 @@ export default async function VoiriePage({ params }: Props) {
         <h2 className="text-lg font-bold">5. Suivi</h2>
         <PermitStatusActions requestId={id} status={p.status} hasAuthorization={p.files.some((f) => f.kind === "AUTHORIZATION")} />
         {p.events.length > 0 && (
-          <ol className="mt-4 space-y-1 border-l-2 border-slate-200 pl-4 text-sm">
+          <ol className="mt-4 space-y-1 border-l-2 border-black/[0.06] pl-4 text-sm">
             {p.events.map((e) => <li key={e.id}><span className="text-ink-mute">{dateFr(e.createdAt, true)}</span> — {PERMIT_STATUS_LABELS[e.status]}{e.note ? ` · ${e.note}` : ""}</li>)}
           </ol>
         )}

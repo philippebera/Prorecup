@@ -22,7 +22,7 @@ export default async function AdminIntegrations() {
     <>
       <PageTitle title="Intégrations externes" subtitle="Les variables sont lues côté serveur ; aucun secret n'est affiché." />
       <div className="mb-4"><Alert tone="info">« Configuré » signifie que les variables sont présentes. Seul un usage réel réussi (colonne de droite) prouve que l&apos;intégration fonctionne.</Alert></div>
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-3xl bg-white shadow-soft ring-1 ring-black/[0.04]">
         <table className="table">
           <thead><tr><th>Service</th><th>État</th><th>Détail</th><th>Preuve d&apos;usage</th></tr></thead>
           <tbody>{statuses.map((s) => (

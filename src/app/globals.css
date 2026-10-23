@@ -7,24 +7,38 @@
 }
 
 html { -webkit-text-size-adjust: 100%; }
-body { @apply bg-slate-50 text-ink antialiased; }
+body { @apply bg-canvas text-ink antialiased; }
+h1, h2, h3 { letter-spacing: -0.025em; }
+::selection { @apply bg-lime text-ink; }
 
 @layer components {
-  .input { @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-ink shadow-sm placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200 disabled:bg-slate-100; }
-  .label { @apply mb-1 block text-sm font-medium text-ink; }
+  .input { @apply block w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base text-ink placeholder:text-ink-mute/70 focus:border-ink focus:outline-none focus:ring-4 focus:ring-lime/60 disabled:bg-canvas; }
+  .label { @apply mb-1.5 block text-sm font-semibold text-ink; }
   .hint { @apply mt-1 text-sm text-ink-mute; }
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-base font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60; }
-  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700; }
-  .btn-secondary { @apply btn border border-slate-300 bg-white text-ink hover:bg-slate-50; }
-  .btn-danger { @apply btn border border-red-200 bg-white text-red-700 hover:bg-red-50; }
-  .btn-sm { @apply px-3 py-1.5 text-sm; }
-  .card { @apply rounded-xl border border-slate-200 bg-white p-5 shadow-sm; }
-  .chip { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
+
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold transition active:scale-[0.98] focus:outline-none focus-visible:ring-4 focus-visible:ring-lime/70 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100; }
+  .btn-primary { @apply btn bg-lime text-ink shadow-soft hover:bg-lime-dark; }
+  .btn-dark { @apply btn bg-ink text-white hover:bg-brand-900; }
+  .btn-secondary { @apply btn bg-white text-ink ring-1 ring-black/10 hover:bg-canvas; }
+  .btn-danger { @apply btn bg-white text-red-700 ring-1 ring-red-200 hover:bg-red-50; }
+  .btn-sm { @apply px-4 py-2 text-sm; }
+
+  .card { @apply rounded-3xl bg-white p-5 shadow-soft ring-1 ring-black/[0.04] sm:p-6; }
+  .card-dark { @apply rounded-3xl bg-ink p-5 text-white shadow-float sm:p-6; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold; }
+  .icon-dot { @apply grid h-9 w-9 shrink-0 place-items-center rounded-full bg-canvas text-base; }
+
   .table { @apply w-full text-left text-sm; }
-  .table th { @apply border-b border-slate-200 px-3 py-2 font-semibold text-ink-soft; }
-  .table td { @apply border-b border-slate-100 px-3 py-2 align-top; }
-  .prose-guide h2 { @apply mb-2 mt-8 text-xl font-bold; }
+  .table th { @apply border-b border-black/5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-mute; }
+  .table td { @apply border-b border-black/[0.04] px-3 py-2.5 align-top; }
+
+  .prose-guide h2 { @apply mb-2 mt-10 text-2xl font-bold; }
   .prose-guide h3 { @apply mb-1 mt-5 text-lg font-semibold; }
   .prose-guide p { @apply mb-3 leading-relaxed text-ink-soft; }
-  .prose-guide ul { @apply mb-3 list-disc space-y-1 pl-6 text-ink-soft; }
+  .prose-guide ul { @apply mb-3 list-disc space-y-1 pl-6 text-ink-soft marker:text-brand-500; }
+}
+
+@layer utilities {
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
 }

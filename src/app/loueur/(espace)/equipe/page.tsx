@@ -14,7 +14,7 @@ export default async function EquipePage() {
     <>
       <PageTitle title="Utilisateurs de l'entreprise" subtitle="Le portefeuille de crédits est partagé : un contact débloqué par un utilisateur est accessible à tous, sans nouveau débit." />
       <div className="card mb-6">
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-black/5">
           {members.map((m) => (
             <li key={m.id} className="flex items-center justify-between py-2">
               <span>{m.user.name} <span className="text-sm text-ink-mute">· {m.user.email}</span></span>

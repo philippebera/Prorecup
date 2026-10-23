@@ -40,12 +40,12 @@ export default async function AdminParametres() {
         <p className="mb-3 text-sm text-ink-mute">Les achats passés conservent le prix payé. Prix TTC calculé avec la TVA courante.</p>
         <div className="space-y-4">
           {packs.map((p) => (
-            <details key={p.id} className="rounded-lg border border-slate-200 p-3">
+            <details key={p.id} className="rounded-2xl border border-black/[0.06] p-3">
               <summary className="cursor-pointer">{p.name} — {p.credits} crédits — {euros(p.priceHtCents)} HT / {euros(vatFromHt(p.priceHtCents, s.vatRateBp).ttc)} TTC {p.active ? "" : "(inactif)"}</summary>
               <div className="mt-3"><JsonForm url="/api/admin/packs" initial={{ ...p }} fields={PACK_FIELDS} /></div>
             </details>
           ))}
-          <details className="rounded-lg border border-dashed border-slate-300 p-3">
+          <details className="rounded-2xl border border-dashed border-black/10 p-3">
             <summary className="cursor-pointer">Nouveau pack</summary>
             <div className="mt-3"><JsonForm url="/api/admin/packs" initial={{ code: "", name: "", credits: 10, priceHtCents: 9000, active: true, sortOrder: packs.length + 1 }} fields={PACK_FIELDS} submitLabel="Créer" /></div>
           </details>

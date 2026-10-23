@@ -62,7 +62,7 @@ export function ClientActions({ requestId, status, unlocked }: { requestId: stri
       <button className="text-sm font-medium text-ink-soft underline" onClick={() => setPanel("report")}>Signaler un problème</button>
 
       {panel === "fulfilled" && (
-        <div className="rounded-lg border border-slate-200 p-4">
+        <div className="rounded-2xl border border-black/[0.06] p-4">
           <p className="font-medium">Quel loueur avez-vous choisi ? (pour information, aucune commission)</p>
           <select className="input mt-2" value={chosen} onChange={(e) => setChosen(e.target.value)}>
             <option value="">Un autre loueur / je préfère ne pas le dire</option>
@@ -72,14 +72,14 @@ export function ClientActions({ requestId, status, unlocked }: { requestId: stri
         </div>
       )}
       {(panel === "close" || panel === "cancel") && (
-        <div className="rounded-lg border border-slate-200 p-4">
+        <div className="rounded-2xl border border-black/[0.06] p-4">
           <p className="font-medium">{panel === "close" ? "Fermer" : "Annuler"} la demande : plus aucune entreprise ne pourra la débloquer.</p>
           <input className="input mt-2" placeholder="Motif (facultatif)" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={300} />
           <button className="btn-danger btn-sm mt-3" onClick={() => act(panel, { reason })}>Confirmer</button>
         </div>
       )}
       {panel === "report" && (
-        <form className="space-y-2 rounded-lg border border-slate-200 p-4" onSubmit={async (e) => {
+        <form className="space-y-2 rounded-2xl border border-black/[0.06] p-4" onSubmit={async (e) => {
           e.preventDefault();
           const fd = new FormData(e.currentTarget);
           const r = await callApi(`/api/requests/${requestId}/report`, "POST", { reason: reportReason, message: fd.get("message"), companyId: reportCompany || null });
@@ -134,7 +134,7 @@ export function DraftCompletion({ requestId, pref, email, phone, emailVerified, 
       {recipients && recipients.length === 0 && <Alert tone="warn">Aucune entreprise inscrite ne correspond pour le moment. Votre demande n&apos;est pas diffusée.</Alert>}
       {recipients && recipients.length > 0 && (
         <div className="space-y-3">
-          <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">{recipients.map((r) => <li key={r.id} className="px-3 py-2">{r.name} <span className="text-sm text-ink-mute">· {r.city}</span></li>)}</ul>
+          <ul className="divide-y divide-black/5 rounded-2xl border border-black/[0.06]">{recipients.map((r) => <li key={r.id} className="px-3 py-2">{r.name} <span className="text-sm text-ink-mute">· {r.city}</span></li>)}</ul>
           <Alert tone="info">{maxUnlocks} entreprises au maximum parmi celles-ci pourront obtenir vos coordonnées ({channels}) et l&apos;adresse du chantier.</Alert>
           <Check checked={consent} onChange={setConsent} label={`Je demande à être contacté(e) par ${channels} au sujet de cette demande, par ${maxUnlocks} entreprises au maximum parmi celles listées.`} />
           <Check checked={marketing} onChange={setMarketing} label="Facultatif : j'accepte de recevoir des informations commerciales de la plateforme." hint="Sans lien avec votre demande." />

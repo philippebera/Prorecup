@@ -18,7 +18,7 @@ export default async function AdminDemandes({ searchParams }: Props) {
     <>
       <PageTitle title="Demandes" actions={<form className="flex gap-2"><input name="q" defaultValue={q} className="input" placeholder="Référence ou commune" /><button className="btn-secondary btn-sm">Rechercher</button></form>} />
       <div className="mb-4 flex flex-wrap gap-2">{Object.entries(REQUEST_STATUS).map(([k, v]) => <Link key={k} className="btn-secondary btn-sm" href={`/admin/demandes?statut=${k}`}>{v.label}</Link>)}</div>
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-3xl bg-white shadow-soft ring-1 ring-black/[0.04]">
         <table className="table">
           <thead><tr><th>Réf.</th><th>Statut</th><th>Zone</th><th>Déchets</th><th>Destinataires</th><th>Déblocages</th><th>Offres</th><th>Signal.</th><th>Créée</th></tr></thead>
           <tbody>

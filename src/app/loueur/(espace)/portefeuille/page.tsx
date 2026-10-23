@@ -63,11 +63,17 @@ export default async function PortefeuillePage({ searchParams }: Props) {
           const { ht, vat, ttc } = vatFromHt(p.priceHtCents, settings.vatRateBp);
           return (
             <div key={p.id} className="card flex flex-col">
-              <p className="font-semibold">{p.name}</p>
-              <p className="mt-2 text-3xl font-bold">{euros(ht)} <span className="text-base font-normal">HT</span></p>
-              <p className="text-sm text-ink-soft">{euros(ttc)} TTC (TVA {vatLabel(settings.vatRateBp)} : {euros(vat)})</p>
-              <p className="mt-2 text-sm">Soit <strong>{euros(Math.round(ht / p.credits))} HT</strong> par contact ({euros(Math.round(ttc / p.credits))} TTC)</p>
-              <div className="mt-4 flex-1" />
+              <div className="flex items-start justify-between">
+                <p className="text-6xl font-extrabold leading-none tracking-tight">{p.credits}</p>
+                <span className="chip bg-canvas text-ink-soft">{p.name}</span>
+              </div>
+              <p className="mt-1 text-sm font-semibold text-ink-mute">crédits · sans expiration</p>
+              <div className="mt-5 rounded-2xl bg-canvas p-3">
+                <p className="text-2xl font-extrabold">{euros(ht)} <span className="text-sm font-semibold text-ink-mute">HT</span></p>
+                <p className="text-sm text-ink-soft">{euros(ttc)} TTC · TVA {vatLabel(settings.vatRateBp)} ({euros(vat)})</p>
+              </div>
+              <p className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-lime-soft px-3 py-1 text-sm font-semibold text-brand-800">{euros(Math.round(ht / p.credits))} HT / contact <span className="font-normal text-ink-mute">({euros(Math.round(ttc / p.credits))} TTC)</span></p>
+              <div className="mt-5 flex-1" />
               <BuyPackButton packId={p.id} disabled={!stripeConfigured() || company.status !== "APPROVED"} />
             </div>
           );
@@ -78,7 +84,7 @@ export default async function PortefeuillePage({ searchParams }: Props) {
       <section className="mt-10">
         <h2 className="mb-3 text-lg font-bold">Historique des crédits</h2>
         {ledger.length === 0 ? <Empty>Aucun mouvement.</Empty> : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <div className="overflow-x-auto rounded-3xl bg-white shadow-soft ring-1 ring-black/[0.04]">
             <table className="table">
               <thead><tr><th>Date</th><th>Opération</th><th>Détail</th><th className="text-right">Crédits</th><th className="text-right">Solde</th><th>Référence</th></tr></thead>
               <tbody>
@@ -102,7 +108,7 @@ export default async function PortefeuillePage({ searchParams }: Props) {
         <h2 className="mb-1 text-lg font-bold">Achats, justificatifs et factures</h2>
         <p className="mb-3 text-sm text-ink-mute">Le justificatif de paiement est émis par Stripe ; la facture est émise par la plateforme.</p>
         {purchases.length === 0 ? <Empty>Aucun achat.</Empty> : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <div className="overflow-x-auto rounded-3xl bg-white shadow-soft ring-1 ring-black/[0.04]">
             <table className="table">
               <thead><tr><th>Date</th><th>Pack</th><th>Montant</th><th>Statut</th><th>Justificatif</th><th>Facture</th></tr></thead>
               <tbody>

@@ -20,7 +20,7 @@ export default async function NotificationsPage() {
       {items.length === 0 ? <Empty>Aucune notification.</Empty> : (
         <ul className="space-y-2">
           {items.map((n) => (
-            <li key={n.id} className={`card ${n.readAt ? "opacity-70" : "border-brand-300"}`}>
+            <li key={n.id} className={`card ${n.readAt ? "opacity-70" : "ring-2 ring-lime"}`}>
               <p className="font-semibold">{n.title}</p>
               <p className="text-sm text-ink-soft">{n.body}</p>
               <p className="mt-1 text-xs text-ink-mute">{dateFr(n.createdAt, true)} {n.link && <Link className="ml-2 font-semibold text-brand-700" href={n.link}>Voir</Link>}</p>

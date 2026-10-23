@@ -1,95 +1,167 @@
 import Link from "next/link";
 import { Container } from "@/components/ui";
+import { PhoneMock } from "@/components/phone-mock";
 import { BRAND_NAME, APP_URL } from "@/lib/brand";
 import { WASTE_TYPES } from "@/lib/catalog";
 import { GUIDES } from "@/lib/guides";
 
 export const revalidate = 3600;
 
+const STEPS: [string, string, string][] = [
+  ["01", "Décrivez votre besoin", "Adresse, dates, déchets, volume. Vous vérifiez votre téléphone ou votre email."],
+  ["02", "Validez les destinataires", "Vous voyez les loueurs de votre zone avant la diffusion. Trois au maximum pourront obtenir vos coordonnées."],
+  ["03", "Comparez et choisissez", "Les loueurs vous appellent, vous écrivent ou envoient une offre détaillée dans votre espace."],
+];
+
+const PROMISES: [string, string][] = [
+  ["Gratuit pour vous", "Aucun frais n'est demandé au demandeur."],
+  ["3 entreprises maximum", "Vous savez lesquelles ont reçu vos coordonnées."],
+  ["Adresse protégée", "Seule la commune est visible avant déblocage."],
+  ["Vous gardez la main", "Arrêtez les contacts ou fermez la demande à tout moment."],
+];
+
 export default function Home() {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: BRAND_NAME,
-    url: APP_URL,
-    description: "Mise en relation entre demandeurs et loueurs de bennes à déchets en France.",
-  };
+  const jsonLd = { "@context": "https://schema.org", "@type": "WebSite", name: BRAND_NAME, url: APP_URL, description: "Mise en relation entre demandeurs et loueurs de bennes à déchets en France." };
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <section className="bg-gradient-to-b from-brand-50 to-slate-50">
-        <Container className="py-12 sm:py-20">
-          <div className="max-w-2xl">
-            <p className="mb-3 inline-block rounded-full bg-white px-3 py-1 text-sm font-medium text-brand-700 shadow-sm">Gratuit pour les demandeurs · Sans engagement</p>
-            <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">Besoin d&apos;une benne à déchets ? Décrivez votre chantier, des loueurs vous contactent.</h1>
-            <p className="mt-4 text-lg text-ink-soft">
-              Particuliers et professionnels : indiquez vos dates, vos déchets et le volume. Votre demande est transmise aux loueurs inscrits qui desservent votre zone. Chaque loueur fixe son prix, et vous réglez la location directement avec lui.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/demande" className="btn-primary px-6 py-3.5 text-lg">Recevoir des propositions</Link>
-              <Link href="/guides/choisir-volume-benne" className="btn-secondary px-6 py-3.5">Quel volume choisir ?</Link>
-            </div>
-            <p className="mt-3 text-sm text-ink-mute">Environ 3 minutes. Aucun mot de passe à créer.</p>
-          </div>
-        </Container>
-      </section>
 
-      <Container className="py-12">
-        <h2 className="text-2xl font-bold">Comment ça marche</h2>
-        <ol className="mt-6 grid gap-4 sm:grid-cols-3">
-          {[
-            ["1", "Décrivez votre besoin", "Adresse du chantier, dates, type de déchets, volume. Vous vérifiez votre téléphone ou votre email."],
-            ["2", "Votre demande est transmise", "Vous voyez la liste des loueurs destinataires avant la diffusion. Trois entreprises au maximum pourront obtenir vos coordonnées."],
-            ["3", "Comparez et choisissez", "Les loueurs vous contactent ou vous envoient une offre détaillée. Vous suivez tout depuis votre espace."],
-          ].map(([n, t, d]) => (
+      {/* Héros */}
+      <Container className="pt-2">
+        <section className="relative overflow-hidden rounded-4xl bg-ink px-6 pb-0 pt-10 text-white sm:px-12 sm:pt-14 lg:pb-14">
+          <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-lime/20 blur-3xl" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-32 left-10 h-72 w-72 rounded-full bg-brand-500/40 blur-3xl" />
+          <div className="relative grid items-center gap-10 lg:grid-cols-[1.15fr_1fr]">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90">
+                <span className="h-2 w-2 rounded-full bg-lime" /> Gratuit pour les demandeurs
+              </p>
+              <h1 className="mt-5 text-[2.6rem] font-extrabold leading-[1.02] tracking-tight sm:text-6xl">
+                <span className="text-lime">Votre benne,</span>
+                <br />
+                sans chercher.
+              </h1>
+              <p className="mt-5 max-w-lg text-lg text-white/70">
+                Décrivez votre chantier en 3 minutes. Votre demande est transmise aux loueurs de votre zone ; chacun fixe son prix et vous réglez la location directement avec lui.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/demande" className="btn-primary justify-between whitespace-nowrap py-3 pl-6 pr-3 text-base sm:justify-center sm:py-4 sm:text-lg">
+                  Recevoir des propositions
+                  <span aria-hidden className="grid h-9 w-9 place-items-center rounded-full bg-ink text-sm text-lime">→</span>
+                </Link>
+                <Link href="/guides/choisir-volume-benne" className="btn bg-white/10 px-6 py-4 text-white hover:bg-white/15">Quel volume choisir ?</Link>
+              </div>
+              <p className="mt-4 text-sm text-white/50">Aucun mot de passe à créer · Sans engagement</p>
+            </div>
+
+            <div className="relative h-[430px] sm:h-[470px] lg:h-[500px]">
+              <PhoneMock className="absolute left-1/2 top-2 -translate-x-1/2 rotate-[-7deg] lg:top-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-mute">Exemple d&apos;écran</p>
+                <p className="mt-1 text-2xl font-extrabold leading-none">Ma demande</p>
+                <div className="mt-3 rounded-3xl bg-ink p-3.5 text-white">
+                  <p className="text-[10px] text-white/50">Commune</p>
+                  <p className="text-sm font-bold">Votre ville</p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-white/40" />
+                    <span className="h-px flex-1 border-t border-dashed border-white/30" />
+                    <span className="h-3 w-3 rounded-full bg-lime ring-4 ring-lime/20" />
+                  </div>
+                  <p className="mt-2 text-[10px] text-white/50">Adresse exacte masquée avant déblocage</p>
+                </div>
+                <div className="mt-3 flex items-center justify-between rounded-full bg-lime py-2 pl-4 pr-2">
+                  <span className="text-xs font-bold text-ink">Recevoir des propositions</span>
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-ink text-xs text-lime">→</span>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="rounded-2xl bg-white p-3"><p className="text-xl font-extrabold">3</p><p className="text-[10px] text-ink-mute">entreprises max.</p></div>
+                  <div className="rounded-2xl bg-ink p-3 text-white"><p className="text-xl font-extrabold text-lime">0 €</p><p className="text-[10px] text-white/50">pour vous</p></div>
+                </div>
+              </PhoneMock>
+              <div className="absolute right-0 top-10 hidden w-48 rounded-3xl bg-white p-3.5 text-ink shadow-float sm:block lg:-right-2">
+                <p className="text-[10px] font-semibold text-ink-mute">Coordonnées</p>
+                <p className="text-sm font-bold">Vérifiées ✓</p>
+                <div className="mt-2 h-1.5 rounded-full bg-canvas"><div className="h-full w-2/3 rounded-full bg-lime" /></div>
+              </div>
+              <div className="absolute bottom-24 left-0 hidden items-center gap-3 rounded-2xl bg-white/10 px-3.5 py-2.5 backdrop-blur sm:flex">
+                <span className="h-2 w-2 rounded-full bg-lime" />
+                <span className="text-xs font-semibold">Vous choisissez librement</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </Container>
+
+      {/* Engagements */}
+      <Container className="mt-6">
+        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {PROMISES.map(([t, d], i) => (
+            <li key={t} className={i === 0 ? "rounded-3xl bg-lime p-5" : "card"}>
+              <p className="font-extrabold">{t}</p>
+              <p className={`mt-1 text-sm ${i === 0 ? "text-ink/70" : "text-ink-mute"}`}>{d}</p>
+            </li>
+          ))}
+        </ul>
+      </Container>
+
+      <Container className="py-16">
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-3xl font-extrabold sm:text-4xl">Comment ça marche</h2>
+          <Link href="/demande" className="hidden text-sm font-bold underline decoration-lime decoration-4 underline-offset-4 sm:inline">Commencer</Link>
+        </div>
+        <ol className="mt-6 grid gap-3 sm:grid-cols-3">
+          {STEPS.map(([n, t, d]) => (
             <li key={n} className="card">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-600 font-bold text-white">{n}</span>
-              <h3 className="mt-3 font-semibold">{t}</h3>
-              <p className="mt-1 text-sm text-ink-soft">{d}</p>
+              <span className="text-sm font-extrabold text-brand-500">{n}</span>
+              <h3 className="mt-6 text-xl font-bold">{t}</h3>
+              <p className="mt-1.5 text-sm text-ink-soft">{d}</p>
             </li>
           ))}
         </ol>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2">
-          <div className="card">
-            <h2 className="text-lg font-bold">Ce qu&apos;il faut savoir</h2>
-            <ul className="mt-3 space-y-2 text-sm text-ink-soft">
-              <li>✔ Le service est gratuit pour vous : aucun frais n&apos;est demandé au demandeur.</li>
-              <li>✔ Vos coordonnées ne sont visibles que par 3 entreprises au maximum, que vous pouvez consulter.</li>
-              <li>✔ Votre adresse exacte n&apos;est jamais affichée avant qu&apos;une entreprise ait débloqué votre demande.</li>
-              <li>✔ Vous pouvez arrêter les nouveaux contacts ou fermer votre demande à tout moment.</li>
-              <li>ℹ Nous ne garantissons ni une réponse, ni un délai, ni une disponibilité : cela dépend des loueurs de votre zone.</li>
-            </ul>
+        <div className="mt-16 grid gap-3 lg:grid-cols-[1fr_1.2fr]">
+          <div className="card-dark flex flex-col justify-between">
+            <div>
+              <h2 className="text-2xl font-extrabold">Ce que nous ne promettons pas</h2>
+              <p className="mt-3 text-white/70">Nous ne garantissons ni réponse, ni délai, ni disponibilité, ni prix : cela dépend des loueurs inscrits dans votre zone. Nous ne prélevons aucune commission sur votre location.</p>
+            </div>
+            <Link href="/zones" className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/15">Voir les zones couvertes →</Link>
           </div>
           <div className="card">
-            <h2 className="text-lg font-bold">Déchets acceptés en benne</h2>
-            <ul className="mt-3 grid grid-cols-2 gap-2 text-sm">
+            <h2 className="text-2xl font-extrabold">Déchets acceptés en benne</h2>
+            <ul className="mt-4 flex flex-wrap gap-2">
               {WASTE_TYPES.map((w) => (
-                <li key={w.code} className="flex items-center gap-2"><span aria-hidden>{w.icon}</span>{w.label}</li>
+                <li key={w.code} className="inline-flex items-center gap-2 rounded-full bg-canvas py-1.5 pl-1.5 pr-3.5 text-sm font-medium">
+                  <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full bg-white">{w.icon}</span>{w.label}
+                </li>
               ))}
             </ul>
-            <Link href="/guides/dechets-acceptes-benne" className="mt-3 inline-block text-sm font-semibold text-brand-700">Voir les exemples et exclusions →</Link>
+            <Link href="/guides/dechets-acceptes-benne" className="mt-5 inline-block text-sm font-bold underline decoration-lime decoration-4 underline-offset-4">Exemples et exclusions</Link>
           </div>
         </div>
 
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold">Guides pratiques</h2>
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-16">
+          <h2 className="text-3xl font-extrabold sm:text-4xl">Guides pratiques</h2>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {GUIDES.map((g) => (
               <li key={g.slug}>
-                <Link href={`/guides/${g.slug}`} className="card block hover:border-brand-300">
-                  <p className="font-semibold">{g.title}</p>
-                  <p className="mt-1 text-sm text-ink-soft">{g.description}</p>
+                <Link href={`/guides/${g.slug}`} className="card group flex h-full items-start justify-between gap-4 transition hover:-translate-y-0.5">
+                  <span>
+                    <span className="block font-bold">{g.title}</span>
+                    <span className="mt-1 block text-sm text-ink-soft">{g.description}</span>
+                  </span>
+                  <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-canvas transition group-hover:bg-lime">→</span>
                 </Link>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="mt-12 rounded-2xl bg-brand-800 p-8 text-white">
-          <h2 className="text-xl font-bold">Vous êtes loueur de bennes ?</h2>
-          <p className="mt-2 text-brand-100">Inscription gratuite. Recevez les demandes de votre zone, consultez-les gratuitement, et utilisez des crédits uniquement pour obtenir les coordonnées des demandes qui vous intéressent. Aucune commission sur vos locations.</p>
-          <Link href="/loueur/inscription" className="btn mt-4 bg-white text-brand-800 hover:bg-brand-50">Inscrire mon entreprise</Link>
+        <div className="relative mt-16 overflow-hidden rounded-4xl bg-lime p-8 sm:p-12">
+          <div aria-hidden className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-ink/5" />
+          <p className="text-sm font-bold uppercase tracking-wider text-ink/60">Espace loueurs</p>
+          <h2 className="mt-2 max-w-xl text-3xl font-extrabold sm:text-4xl">Recevez les demandes de votre zone. Payez seulement les contacts qui vous intéressent.</h2>
+          <p className="mt-3 max-w-xl text-ink/70">Inscription gratuite, consultation gratuite des demandes, prix libres, aucune commission sur vos locations.</p>
+          <Link href="/loueur/inscription" className="btn-dark mt-6">Inscrire mon entreprise →</Link>
         </div>
       </Container>
     </>

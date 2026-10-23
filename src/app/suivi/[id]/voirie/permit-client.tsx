@@ -34,7 +34,7 @@ export function PermitForm({ requestId, initial, authorities, address, locked }:
           <label><span className="label">Largeur (m)</span><input className="input" inputMode="decimal" value={f.widthM} onChange={(e) => set("widthM", e.target.value)} /></label>
           <label><span className="label">Hauteur (m)</span><input className="input" inputMode="decimal" value={f.heightM} onChange={(e) => set("heightM", e.target.value)} /></label>
         </div>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-5 w-5 accent-brand-600" checked={f.dimensionsConfirmed} onChange={(e) => set("dimensionsConfirmed", e.target.checked)} />Dimensions confirmées par le loueur</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-5 w-5 accent-ink" checked={f.dimensionsConfirmed} onChange={(e) => set("dimensionsConfirmed", e.target.checked)} />Dimensions confirmées par le loueur</label>
         <div className="grid gap-3 sm:grid-cols-2">
           <label><span className="label">Nom du demandeur</span><input className="input" value={f.applicantName} onChange={(e) => set("applicantName", e.target.value)} /></label>
           <label><span className="label">Qualité (facultatif)</span><input className="input" value={f.applicantQuality} onChange={(e) => set("applicantQuality", e.target.value)} placeholder="Propriétaire, entreprise de travaux…" /></label>
@@ -132,9 +132,9 @@ export function PermitSend({ requestId, to, ready }: { requestId: string; to: st
   const [ok, setOk] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   return (
-    <div className="mt-3 rounded-lg border border-slate-200 p-3 text-sm">
+    <div className="mt-3 rounded-2xl border border-black/[0.06] p-3 text-sm">
       <p>Canal de dépôt vérifié par l&apos;administration : <strong>{to}</strong>.</p>
-      <label className="mt-2 flex items-start gap-2"><input type="checkbox" className="mt-0.5 h-5 w-5 accent-brand-600" checked={ok} onChange={(e) => setOk(e.target.checked)} />J&apos;ai relu le dossier et je demande son envoi à cette adresse en mon nom.</label>
+      <label className="mt-2 flex items-start gap-2"><input type="checkbox" className="mt-0.5 h-5 w-5 accent-ink" checked={ok} onChange={(e) => setOk(e.target.checked)} />J&apos;ai relu le dossier et je demande son envoi à cette adresse en mon nom.</label>
       <button className="btn-primary btn-sm mt-2" disabled={!ok || !ready} onClick={async () => {
         const r = await callApi(`/api/requests/${requestId}/permit/send`, "POST", { confirmed: ok });
         setMsg(r.ok ? "Dossier envoyé. Ce n'est pas une autorisation : attendez la réponse de l'autorité." : r.message);

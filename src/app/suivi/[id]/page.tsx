@@ -24,7 +24,24 @@ export default async function SuiviDetail({ params }: Props) {
 
   return (
     <Container className="max-w-3xl py-8">
-      <PageTitle title={`Demande ${r.publicRef}`} subtitle={<>Déposée le {dateFr(r.createdAt)} · <Badge tone={st.tone}>{st.label}</Badge></>} />
+      <PageTitle title={`Demande ${r.publicRef.replace("-", "\u2011")}`} subtitle={<>Déposée le {dateFr(r.createdAt)} · <Badge tone={st.tone}>{st.label}</Badge></>} />
+
+      {r.status !== "DRAFT" && (
+        <section className="card-dark mb-6">
+          <p className="text-xs font-semibold uppercase tracking-wider text-white/50">Entreprises ayant vos coordonnées</p>
+          <div className="mt-2 flex items-end justify-between gap-4">
+            <p className="text-5xl font-extrabold text-lime">{r.unlocks.length}<span className="text-2xl text-white/40">/{r.maxUnlocks}</span></p>
+            <div className="flex gap-1.5" aria-hidden>
+              {Array.from({ length: r.maxUnlocks }, (_, i) => (
+                <span key={i} className={`grid h-10 w-10 place-items-center rounded-full text-sm font-bold ${i < r.unlocks.length ? "bg-lime text-ink" : "bg-white/10 text-white/40"}`}>
+                  {i < r.unlocks.length ? name(r.unlocks[i].company).slice(0, 1) : i + 1}
+                </span>
+              ))}
+            </div>
+          </div>
+          <p className="mt-3 text-sm text-white/60">{r.offers.length} offre(s) reçue(s) · {r.recipients.length} entreprise(s) destinataire(s)</p>
+        </section>
+      )}
 
       {r.status === "DRAFT" && (
         <section className="card mb-6 space-y-3">
@@ -40,7 +57,7 @@ export default async function SuiviDetail({ params }: Props) {
           {r.unlocks.length === 0 ? (
             <p className="mt-2 text-sm text-ink-soft">Aucune pour l&apos;instant. Nous ne pouvons pas garantir de réponse ni de délai.</p>
           ) : (
-            <ul className="mt-3 divide-y divide-slate-100">
+            <ul className="mt-3 divide-y divide-black/5">
               {r.unlocks.map((u) => (
                 <li key={u.id} className="py-3">
                   <p className="font-semibold">{name(u.company)} <span className="text-sm font-normal text-ink-mute">· {u.company.city}</span></p>
@@ -91,7 +108,7 @@ export default async function SuiviDetail({ params }: Props) {
         ]} />
         {r.photos.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
-            {r.photos.map((p) => <a key={p.id} href={signedFileUrl(p.storageKey)} target="_blank" rel="noreferrer"><img src={signedFileUrl(p.storageKey)} alt="Photo du chantier" className="h-24 w-24 rounded-lg object-cover" /></a>)}
+            {r.photos.map((p) => <a key={p.id} href={signedFileUrl(p.storageKey)} target="_blank" rel="noreferrer"><img src={signedFileUrl(p.storageKey)} alt="Photo du chantier" className="h-24 w-24 rounded-2xl object-cover" /></a>)}
           </div>
         )}
       </section>

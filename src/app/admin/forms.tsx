@@ -144,7 +144,7 @@ export function JsonForm({ url, method = "POST", fields, initial, submitLabel = 
         {fields.map((f) => (
           <label key={f.name} className={f.type === "textarea" ? "block sm:col-span-2" : f.type === "checkbox" ? "flex items-center gap-2 text-sm" : "block"}>
             {f.type === "checkbox" ? (
-              <><input type="checkbox" className="h-5 w-5 accent-brand-600" checked={Boolean(v[f.name])} onChange={(e) => setV({ ...v, [f.name]: e.target.checked })} />{f.label}</>
+              <><input type="checkbox" className="h-5 w-5 accent-ink" checked={Boolean(v[f.name])} onChange={(e) => setV({ ...v, [f.name]: e.target.checked })} />{f.label}</>
             ) : (
               <>
                 <span className="label">{f.label}</span>

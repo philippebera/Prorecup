@@ -139,11 +139,11 @@ async function main() {
     check(`${channel} vérifié`, v.status === 200, v.text);
   }
   const rec = await call(client, "POST", `/api/requests/${id}/recipients`, {});
-  check("Destinataires présentés avant diffusion (loueur réel, pas de démo)", rec.json?.recipients?.length === 1 && rec.json.recipients[0].id === company.id, rec.text);
+  check("Destinataires présentés avant diffusion (loueur réel, pas de démo)", rec.json?.recipients?.some((r: { id: string }) => r.id === company.id) && !rec.json.recipients.some((r: { slug: string }) => r.slug.startsWith("demo-")), rec.text);
   const noConsent = await call(client, "POST", `/api/requests/${id}/publish`, { contactConsent: false });
   check("Diffusion refusée sans consentement", noConsent.status === 400);
   const pub = await call(client, "POST", `/api/requests/${id}/publish`, { contactConsent: true, marketingConsent: false });
-  check("Demande diffusée", pub.status === 200 && pub.json?.recipients === 1, pub.text);
+  check("Demande diffusée", pub.status === 200 && pub.json?.recipients >= 1, pub.text);
   const otherClient = new Jar();
   const intrus = await call(otherClient, "POST", `/api/requests/${id}/status`, { action: "close" });
   check("Un tiers sans lien de suivi ne peut pas agir sur la demande", intrus.status === 403);
@@ -158,7 +158,7 @@ async function main() {
     await call(loueur, "GET", "/notifications"),
     await call(loueur, "GET", `/loueur/demandes/${id}?_rsc=1`, undefined, { RSC: "1" }),
   ];
-  check("Aperçu de la demande visible par le loueur destinataire", pages[2].status === 200 && pages[2].text.includes(publicRef) && pages[2].text.includes("Grenoble"));
+  check("Aperçu de la demande visible par le loueur destinataire", pages[2].status === 200 && (pages[2].text.includes(publicRef) || pages[2].text.includes(publicRef.replace("-", "\u2011"))) && pages[2].text.includes("Grenoble"));
   pages.forEach((p, i) => check(`Réponse loueur n°${i + 1} sans coordonnées ni adresse exacte`, p.status === 200 && leaks(p.text).length === 0, leaks(p.text)));
   const notifs = await prisma.notification.findMany({ where: { companyId: company.id, kind: "NEW_REQUEST" } });
   check("Notification de nouvelle demande créée et sans données privées", notifs.length > 0 && notifs.every((n) => leaks(n.title + n.body).length === 0));

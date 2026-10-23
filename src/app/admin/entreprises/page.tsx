@@ -29,7 +29,7 @@ export default async function AdminEntreprises({ searchParams }: Props) {
         {Object.entries(STATUS).map(([k, v]) => <Link key={k} className="btn-secondary btn-sm" href={`/admin/entreprises?statut=${k}`}>{v.label}</Link>)}
       </div>
       {companies.length === 0 ? <Empty>Aucune entreprise.</Empty> : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-x-auto rounded-3xl bg-white shadow-soft ring-1 ring-black/[0.04]">
           <table className="table">
             <thead><tr><th>Entreprise</th><th>SIRET</th><th>Statut</th><th>Signaux</th><th>Crédits</th><th>Déblocages</th><th>Inscrite le</th></tr></thead>
             <tbody>
