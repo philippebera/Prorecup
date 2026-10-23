@@ -1,0 +1,75 @@
+@import 'tailwindcss';
+
+/* Tokens de design (§6). Le feed vidéo utilise toujours la palette sombre (.theme-dark). */
+:root {
+  --bg: #e9e9ec;
+  --surface: #ffffff;
+  --surface-2: #f4f4f6;
+  --ink: #000000;
+  --ink-2: #4a4a50;
+  --muted: #8c8c94;
+  --accent: #c4623a;
+  --accent-light: #e3a27f;
+  --accent-pale: #f2d4c0;
+  --accent-dark: #8f4325;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --surface: #17171a;
+    --surface-2: #222226;
+    --ink: #ffffff;
+    --ink-2: #c4c4cc;
+    --muted: #8c8c94;
+  }
+}
+
+.theme-dark {
+  --bg: #000000;
+  --surface: #17171a;
+  --surface-2: #222226;
+  --ink: #ffffff;
+  --ink-2: #c4c4cc;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-accent-pale: var(--accent-pale);
+  --color-accent-dark: var(--accent-dark);
+  --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
+  --radius-card: 28px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

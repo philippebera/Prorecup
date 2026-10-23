@@ -1,0 +1,7 @@
+dist
+dev-dist
+reference
+package-lock.json
+playwright-report
+test-results
+CLAUDE.md

@@ -1,0 +1,13 @@
+{
+  "name": "Cercle",
+  "short_name": "Cercle",
+  "description": "Films et livres recommandés en vidéo par votre cercle.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": []
+}
