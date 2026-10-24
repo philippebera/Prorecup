@@ -142,6 +142,25 @@ Postgres) :
 6. Créer l'administrateur (`npm run admin:create`), renseigner l'identité de
    l'exploitant dans `/admin/parametres`, compléter les documents légaux.
 
+### Netlify
+
+Le dépôt contient `netlify.toml` et deux fonctions planifiées (`netlify/functions/`) qui
+remplacent le worker : file de notifications chaque minute, purge quotidienne.
+Variables à définir dans Netlify (Project configuration → Environment variables) :
+
+| Variable | Valeur |
+|---|---|
+| `DATABASE_URL` | URL PostgreSQL (Neon, Supabase…) ; disponible aussi pendant le build (migrations + seed) |
+| `APP_SECRET`, `CRON_SECRET` | secrets aléatoires |
+| `APP_URL`, `NEXT_PUBLIC_APP_URL` | `https://prorecup.netlify.app` (ou le domaine final) |
+| `STORAGE_DRIVER` | `netlify-blobs` (fichiers privés dans Netlify Blobs) |
+| SMTP / Stripe / Twilio / VAPID | comme ci-dessus |
+
+Limites propres au serverless : le flux temps réel (SSE) est coupé à la durée maximale
+d'une fonction et se reconnecte automatiquement ; une base serverless doit être
+utilisée avec une URL « poolée » (ex. Neon : `-pooler`, `?pgbouncer=true&connection_limit=1`)
+pour l'exécution et une URL directe pour `prisma migrate deploy`.
+
 ## Services externes
 
 | Service | Rôle | Variables | Sans configuration |

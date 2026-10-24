@@ -1,0 +1,11 @@
+# Déploiement Netlify (Next.js via le runtime officiel, détecté automatiquement).
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  # Fonctions planifiées (notifications, purge) : voir netlify/functions/
+  directory = "netlify/functions"

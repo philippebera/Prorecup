@@ -71,6 +71,18 @@ export function integrationStatuses(): IntegrationStatus[] {
       detail: pushConfigured() ? "Clés VAPID présentes." : "Clés VAPID manquantes : notifications push désactivées.",
     },
     {
+      key: "storage",
+      label: "Stockage des fichiers privés",
+      configured: process.env.STORAGE_DRIVER === "netlify-blobs" || !process.env.NETLIFY,
+      required: true,
+      detail:
+        process.env.STORAGE_DRIVER === "netlify-blobs"
+          ? "Netlify Blobs (store « private-files », région eu-central-1)."
+          : process.env.NETLIFY
+            ? "Hébergement Netlify sans STORAGE_DRIVER=netlify-blobs : les fichiers ne seraient pas conservés."
+            : `Disque local (${process.env.STORAGE_DIR || "./storage"}) : doit être un volume persistant.`,
+    },
+    {
       key: "captcha",
       label: "Anti-spam Turnstile (facultatif)",
       configured: captchaConfigured(),

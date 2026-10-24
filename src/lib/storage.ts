@@ -3,11 +3,19 @@ import path from "node:path";
 import { hmac, randomToken, safeEqual } from "./crypto";
 import { AppError } from "./errors";
 
-// Stockage privé sur disque (hors du dossier public). Les fichiers ne sont servis
-// que via /api/files/<clé> avec une signature HMAC à durée limitée, émise
-// uniquement après un contrôle de droits côté serveur.
+// Stockage privé : disque local (hors du dossier public) ou Netlify Blobs quand
+// STORAGE_DRIVER=netlify-blobs (hébergement serverless sans disque persistant).
+// Dans les deux cas, les fichiers ne sont servis que via /api/files/<clé> avec une
+// signature HMAC à durée limitée, émise uniquement après un contrôle de droits côté serveur.
 
 const ROOT = () => path.resolve(process.env.STORAGE_DIR || "./storage");
+const blobsEnabled = () => process.env.STORAGE_DRIVER === "netlify-blobs";
+
+async function blobStore() {
+  const { getStore } = await import("@netlify/blobs");
+  // Région fixée à chaque appel (sinon us-east-2 par défaut) ; cohérence forte pour relire juste après l'envoi.
+  return getStore({ name: "private-files", region: "eu-central-1", consistency: "strong" });
+}
 export const MAX_FILE_BYTES = 8 * 1024 * 1024;
 
 const SIGNATURES: { mime: string; ext: string; test: (b: Buffer) => boolean }[] = [
@@ -28,6 +36,11 @@ export async function saveFile(buf: Buffer, folder: string, allowed: string[]) {
   if (buf.length === 0 || buf.length > MAX_FILE_BYTES) throw new AppError("INVALID_FILE", "Fichier vide ou trop volumineux (8 Mo max)");
   const { mime, ext } = sniffMime(buf, allowed);
   const key = `${folder}/${randomToken(18)}.${ext}`;
+  if (blobsEnabled()) {
+    const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+    await (await blobStore()).set(key, ab, { metadata: { mime } });
+    return { key, mime, size: buf.length };
+  }
   const full = path.join(ROOT(), key);
   await mkdir(path.dirname(full), { recursive: true });
   await writeFile(full, buf, { mode: 0o600 });
@@ -39,12 +52,23 @@ function resolveKey(key: string) {
   return path.join(ROOT(), key);
 }
 
-export async function readStoredFile(key: string) {
-  return readFile(resolveKey(key));
+export async function readStoredFile(key: string): Promise<Buffer> {
+  const full = resolveKey(key);
+  if (blobsEnabled()) {
+    const data = await (await blobStore()).get(key, { type: "arrayBuffer" });
+    if (data === null) throw new AppError("NOT_FOUND", "Fichier introuvable", 404);
+    return Buffer.from(data);
+  }
+  return readFile(full);
 }
 
 export async function deleteStoredFile(key: string) {
-  await unlink(resolveKey(key)).catch(() => {});
+  const full = resolveKey(key);
+  if (blobsEnabled()) {
+    await (await blobStore()).delete(key).catch(() => {});
+    return;
+  }
+  await unlink(full).catch(() => {});
 }
 
 export function signedFileUrl(key: string, ttlSeconds = 600) {

@@ -9,7 +9,9 @@
 //    qu'à travers les fonctions de src/lib/requests/views.ts.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "rhel-openssl-3.0.x" : moteur pour les fonctions serverless (Netlify, AWS Lambda).
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {

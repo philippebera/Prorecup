@@ -22,6 +22,7 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@netlify/blobs": "^11.1.6",
     "@prisma/client": "^6.19.3",
     "next": "^15.5.28",
     "nodemailer": "^10.2.1",
