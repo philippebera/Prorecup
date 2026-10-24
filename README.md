@@ -150,7 +150,8 @@ Variables à définir dans Netlify (Project configuration → Environment variab
 
 | Variable | Valeur |
 |---|---|
-| `DATABASE_URL` | URL PostgreSQL (Neon, Supabase…) ; disponible aussi pendant le build (migrations + seed) |
+| `DATABASE_URL` | Supabase : pooler « transaction » (port 6543) + `?pgbouncer=true&connection_limit=1` |
+| `DIRECT_URL` | Supabase : pooler « session » (port 5432), utilisé au build par `prisma migrate deploy` et le seed |
 | `APP_SECRET`, `CRON_SECRET` | secrets aléatoires |
 | `APP_URL`, `NEXT_PUBLIC_APP_URL` | `https://prorecup.netlify.app` (ou le domaine final) |
 | `STORAGE_DRIVER` | `netlify-blobs` (fichiers privés dans Netlify Blobs) |
@@ -165,7 +166,7 @@ pour l'exécution et une URL directe pour `prisma migrate deploy`.
 
 | Service | Rôle | Variables | Sans configuration |
 |---|---|---|---|
-| **PostgreSQL** (requis) | base de données | `DATABASE_URL` | l'application ne démarre pas |
+| **PostgreSQL** (requis) | base de données | `DATABASE_URL`, `DIRECT_URL` (même valeur hors serverless) | l'application ne démarre pas |
 | **Stripe** (requis pour vendre) | packs de crédits, Checkout + webhooks, mode test | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PAYMENT_METHODS` | achat désactivé, signalé aux loueurs et à l'admin |
 | **SMTP** (requis en production) | codes de vérification email, alertes, liens de suivi | `SMTP_*` | aucun email ; vérification email impossible en production |
 | **Twilio** (facultatif) | codes SMS, alertes SMS plafonnées | `SMS_PROVIDER=twilio`, `TWILIO_*`, `SMS_*_CAP` | contact par téléphone non vérifiable → choix « email » seul proposé en production |

@@ -16,7 +16,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // DATABASE_URL : connexion de l'application (pooler en serverless).
+  // DIRECT_URL : connexion utilisée par `prisma migrate` (identique à DATABASE_URL hors serverless).
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ---------------------------------------------------------------------------

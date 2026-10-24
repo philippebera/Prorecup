@@ -1,4 +1,5 @@
 process.env.DATABASE_URL = process.env.DATABASE_URL_TEST || "postgresql://benne:benne@localhost:5432/bennedirect_test";
+process.env.DIRECT_URL = process.env.DATABASE_URL;
 process.env.APP_SECRET = "test-secret-test-secret-test-secret-0123456789";
 process.env.DEV_LOG_OTP = "true";
 process.env.STORAGE_DIR = "/tmp/benne-test-storage";
