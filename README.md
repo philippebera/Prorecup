@@ -157,6 +157,12 @@ Variables à définir dans Netlify (Project configuration → Environment variab
 | `STORAGE_DRIVER` | `netlify-blobs` (fichiers privés dans Netlify Blobs) |
 | SMTP / Stripe / Twilio / VAPID | comme ci-dessus |
 
+Configuration Supabase utilisée en production : un rôle dédié `benne_app` (sans droits
+d'administration) propriétaire d'un schéma `benne`, non exposé par l'API publique de Supabase.
+Les deux URLs passent par le pooler Supavisor (`aws-1-eu-west-1.pooler.supabase.com`,
+utilisateur `benne_app.<ref-projet>`) avec `?schema=benne` : l'adresse directe
+`db.<ref>.supabase.co` n'est joignable qu'en IPv6, ce que Netlify ne prend pas en charge.
+
 Limites propres au serverless : le flux temps réel (SSE) est coupé à la durée maximale
 d'une fonction et se reconnecte automatiquement ; une base serverless doit être
 utilisée avec une URL « poolée » (ex. Neon : `-pooler`, `?pgbouncer=true&connection_limit=1`)
